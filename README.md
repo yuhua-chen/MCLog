@@ -11,6 +11,8 @@ This plugin let you feel easy to trace console log. Although you may search the 
 
 ## Usage
 
+Install it via [Alcatraz](http://alcatraz.io/)  
+or  
  1. Clone the repo and build it.
  2. MCLog.xcplugin should appear in `~/Library/Application Support/Developer/Shared/Xcode/Plug-ins`
  3. Restart Xcode  
