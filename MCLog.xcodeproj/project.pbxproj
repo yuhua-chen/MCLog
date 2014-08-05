@@ -1,0 +1,286 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8CBAF63C198B88C70067171A /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8CBAF63B198B88C70067171A /* CoreFoundation.framework */; };
+		8CBAF642198B88C70067171A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8CBAF640198B88C70067171A /* InfoPlist.strings */; };
+		8CBAF64B198B88DD0067171A /* MCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 8CBAF64A198B88DD0067171A /* MCLog.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		8CBAF638198B88C70067171A /* MCLog.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MCLog.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
+		8CBAF63B198B88C70067171A /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		8CBAF63F198B88C70067171A /* MCLog-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MCLog-Info.plist"; sourceTree = "<group>"; };
+		8CBAF641198B88C70067171A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		8CBAF643198B88C70067171A /* MCLog-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MCLog-Prefix.pch"; sourceTree = "<group>"; };
+		8CBAF649198B88DD0067171A /* MCLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCLog.h; sourceTree = "<group>"; };
+		8CBAF64A198B88DD0067171A /* MCLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCLog.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8CBAF635198B88C70067171A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8CBAF63C198B88C70067171A /* CoreFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		8CBAF62F198B88C70067171A = {
+			isa = PBXGroup;
+			children = (
+				8CBAF63D198B88C70067171A /* MCLog */,
+				8CBAF63A198B88C70067171A /* Frameworks */,
+				8CBAF639198B88C70067171A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8CBAF639198B88C70067171A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8CBAF638198B88C70067171A /* MCLog.xcplugin */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8CBAF63A198B88C70067171A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8CBAF63B198B88C70067171A /* CoreFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		8CBAF63D198B88C70067171A /* MCLog */ = {
+			isa = PBXGroup;
+			children = (
+				8CBAF63E198B88C70067171A /* Supporting Files */,
+				8CBAF649198B88DD0067171A /* MCLog.h */,
+				8CBAF64A198B88DD0067171A /* MCLog.m */,
+			);
+			path = MCLog;
+			sourceTree = "<group>";
+		};
+		8CBAF63E198B88C70067171A /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				8CBAF63F198B88C70067171A /* MCLog-Info.plist */,
+				8CBAF640198B88C70067171A /* InfoPlist.strings */,
+				8CBAF643198B88C70067171A /* MCLog-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8CBAF637198B88C70067171A /* MCLog */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8CBAF646198B88C70067171A /* Build configuration list for PBXNativeTarget "MCLog" */;
+			buildPhases = (
+				8CBAF634198B88C70067171A /* Sources */,
+				8CBAF635198B88C70067171A /* Frameworks */,
+				8CBAF636198B88C70067171A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MCLog;
+			productName = MCLog;
+			productReference = 8CBAF638198B88C70067171A /* MCLog.xcplugin */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8CBAF630198B88C70067171A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "Yuhua Chen";
+			};
+			buildConfigurationList = 8CBAF633198B88C70067171A /* Build configuration list for PBXProject "MCLog" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 8CBAF62F198B88C70067171A;
+			productRefGroup = 8CBAF639198B88C70067171A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8CBAF637198B88C70067171A /* MCLog */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8CBAF636198B88C70067171A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8CBAF642198B88C70067171A /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8CBAF634198B88C70067171A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8CBAF64B198B88DD0067171A /* MCLog.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		8CBAF640198B88C70067171A /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				8CBAF641198B88C70067171A /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		8CBAF644198B88C70067171A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		8CBAF645198B88C70067171A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		8CBAF647198B88C70067171A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DEPLOYMENT_LOCATION = YES;
+				DSTROOT = "${HOME}";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "MCLog/MCLog-Prefix.pch";
+				INFOPLIST_FILE = "MCLog/MCLog-Info.plist";
+				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = xcplugin;
+			};
+			name = Debug;
+		};
+		8CBAF648198B88C70067171A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DEPLOYMENT_LOCATION = YES;
+				DSTROOT = "${HOME}";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "MCLog/MCLog-Prefix.pch";
+				INFOPLIST_FILE = "MCLog/MCLog-Info.plist";
+				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = xcplugin;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8CBAF633198B88C70067171A /* Build configuration list for PBXProject "MCLog" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8CBAF644198B88C70067171A /* Debug */,
+				8CBAF645198B88C70067171A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8CBAF646198B88C70067171A /* Build configuration list for PBXNativeTarget "MCLog" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8CBAF647198B88C70067171A /* Debug */,
+				8CBAF648198B88C70067171A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 8CBAF630198B88C70067171A /* Project object */;
+}
