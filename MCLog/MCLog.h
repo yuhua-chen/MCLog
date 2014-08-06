@@ -17,6 +17,7 @@
 
 @interface MCLogIDEConsoleArea : NSViewController
 - (BOOL)_shouldAppendItem:(id)obj;
+- (void)_clearText;
 @end
 
 @interface MCLog : NSObject
@@ -24,5 +25,6 @@
 @end
 
 void replaceShouldAppendItemMethod();
+void replaceClearTextMethod();
 NSSearchField *getSearchField(id consoleArea);
 NSString *hash(id obj);

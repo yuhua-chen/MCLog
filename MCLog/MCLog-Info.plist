@@ -17,13 +17,11 @@
 	<key>CFBundlePackageType</key>
 	<string>BNDL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>1.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>NSPrincipalClass</key>
-	<string>MCLog</string>
 	<key>DVTPlugInCompatibilityUUIDs</key>
 	<array>
 		<string>A2E4D43F-41F4-4FB9-BB94-7177011C9AED</string>
@@ -32,6 +30,8 @@
 	</array>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2014年 Yuhua Chen. All rights reserved.</string>
+	<key>NSPrincipalClass</key>
+	<string>MCLog</string>
 	<key>XC4Compatible</key>
 	<true/>
 	<key>XC5Compatible</key>

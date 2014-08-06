@@ -14,6 +14,7 @@
 
 static NSMutableDictionary *originConsoleItemsMap;
 static MCLogIDEConsoleArea *consoleArea = nil;
+static IMP _clearText = nil;
 
 @interface MCLog ()<NSTextFieldDelegate>
 {
@@ -33,6 +34,7 @@ static MCLogIDEConsoleArea *consoleArea = nil;
     }
 	
 	replaceShouldAppendItemMethod();
+	replaceClearTextMethod();
 	originConsoleItemsMap = [NSMutableDictionary dictionary];
 	setenv(MCLOG_FLAG, "YES", 0);
 }
@@ -58,7 +60,6 @@ static MCLogIDEConsoleArea *consoleArea = nil;
     if (self) {
 		workspace = [NSMutableDictionary dictionary];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activate:) name:@"IDEIndexWillIndexWorkspaceNotification" object:nil];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(clearConsoleItems:) name:@"IDEBuildOperationDidStopNotification" object:nil];
     }
     return self;
 }
@@ -186,12 +187,6 @@ static MCLogIDEConsoleArea *consoleArea = nil;
 	}
 }
 
-- (void)clearConsoleItems:(NSNotification *)notification
-{
-	// clear up the old items when rebuild
-	originConsoleItemsMap = [NSMutableDictionary dictionary];
-}
-
 @end
 
 #pragma mark - NSSearchField (MCLog)
@@ -274,6 +269,11 @@ static const void *kMCLogIDEConsoleAreaKey;
 	return NO;
 }
 
+- (void)_clearText
+{
+	_clearText(self, _cmd);
+	[originConsoleItemsMap removeObjectForKey:hash(self)];
+}
 @end
 
 #pragma mark -
@@ -284,6 +284,16 @@ void replaceShouldAppendItemMethod()
     Method originalMethod = class_getInstanceMethod([IDEConsoleArea class], @selector(_shouldAppendItem:));
 	
 	IMP newImpl = class_getMethodImplementation([MCLogIDEConsoleArea class], @selector(_shouldAppendItem:));
+	method_setImplementation(originalMethod, newImpl);
+}
+
+void replaceClearTextMethod()
+{
+	Class IDEConsoleArea = NSClassFromString(@"IDEConsoleArea");
+	Method originalMethod = class_getInstanceMethod([IDEConsoleArea class], @selector(_clearText));
+	_clearText = method_getImplementation(originalMethod);
+	
+	IMP newImpl = class_getMethodImplementation([MCLogIDEConsoleArea class], @selector(_clearText));
 	method_setImplementation(originalMethod, newImpl);
 }
 
