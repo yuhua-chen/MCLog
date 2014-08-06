@@ -8,6 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
+@class MCLogIDEConsoleArea;
+
+@interface NSSearchField (MCLog)
+@property (nonatomic, strong) MCLogIDEConsoleArea *consoleArea;
+@property (nonatomic, strong) NSTextView *consoleTextView;
+@end
+
 @interface MCLogIDEConsoleArea : NSViewController
 - (BOOL)_shouldAppendItem:(id)obj;
 @end
@@ -17,3 +24,5 @@
 @end
 
 void replaceShouldAppendItemMethod();
+NSSearchField *getSearchField(id consoleArea);
+NSString *hash(id obj);

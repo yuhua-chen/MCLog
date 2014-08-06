@@ -10,15 +10,14 @@
 #import <objc/runtime.h>
 
 #define MCLOG_FLAG "MCLOG_FLAG"
+#define kTagSearchField	99
 
-static NSSearchField *searchFiled = nil;
-static NSMutableDictionary *originConsoleItems;
+static NSMutableDictionary *originConsoleItemsMap;
 static MCLogIDEConsoleArea *consoleArea = nil;
 
 @interface MCLog ()<NSTextFieldDelegate>
 {
-	NSView *scopeBarView;
-	NSView *consoleTextView;
+	NSMutableDictionary *workspace;
 }
 @end
 
@@ -34,6 +33,7 @@ static MCLogIDEConsoleArea *consoleArea = nil;
     }
 	
 	replaceShouldAppendItemMethod();
+	originConsoleItemsMap = [NSMutableDictionary dictionary];
 	setenv(MCLOG_FLAG, "YES", 0);
 }
 
@@ -56,7 +56,8 @@ static MCLogIDEConsoleArea *consoleArea = nil;
 {
     self = [super init];
     if (self) {
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activate:) name:NSWindowDidUpdateNotification object:nil];
+		workspace = [NSMutableDictionary dictionary];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activate:) name:@"IDEIndexWillIndexWorkspaceNotification" object:nil];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(clearConsoleItems:) name:@"IDEBuildOperationDidStopNotification" object:nil];
     }
     return self;
@@ -91,18 +92,20 @@ static MCLogIDEConsoleArea *consoleArea = nil;
 	return nil;
 }
 
-- (BOOL)initViews
-{
-	NSView *contentView = [[NSApp mainWindow] contentView];
-	consoleTextView = [self getViewByClassName:@"IDEConsoleTextView" andContainerView:contentView];
-	
-	contentView = [self getParantViewByClassName:@"DVTControllerContentView" andView:consoleTextView];
-	scopeBarView = [self getViewByClassName:@"DVTScopeBarView" andContainerView:contentView];
-	return scopeBarView && consoleTextView;
-}
-
 - (BOOL)addCustomViews
 {
+	NSView *contentView = [[NSApp mainWindow] contentView];
+	NSView *consoleTextView = [self getViewByClassName:@"IDEConsoleTextView" andContainerView:contentView];
+	if (!consoleTextView) {
+		return NO;
+	}
+	
+	contentView = [self getParantViewByClassName:@"DVTControllerContentView" andView:consoleTextView];
+	NSView *scopeBarView = [self getViewByClassName:@"DVTScopeBarView" andContainerView:contentView];
+	if (!scopeBarView) {
+		return NO;
+	}
+	
 	NSButton *button = nil;
 	for (NSView *subView in scopeBarView.subviews) {
 		if ([[subView className] isEqualToString:@"NSButton"]) {
@@ -120,12 +123,14 @@ static MCLogIDEConsoleArea *consoleArea = nil;
 	frame.size.width = 200.0;
 	frame.size.height -= 2;
 	
-	searchFiled = [[NSSearchField alloc] initWithFrame:frame];
-	searchFiled.autoresizingMask = NSViewMinXMargin;
-	searchFiled.font = [NSFont systemFontOfSize:11.0];
-	searchFiled.delegate = self;
-	[searchFiled.cell setPlaceholderString:@"Regular Expression"];
-	[scopeBarView addSubview:searchFiled];
+	NSSearchField *searchField = [[NSSearchField alloc] initWithFrame:frame];
+	searchField.autoresizingMask = NSViewMinXMargin;
+	searchField.font = [NSFont systemFontOfSize:11.0];
+	searchField.delegate = self;
+	searchField.consoleTextView = (NSTextView *)consoleTextView;
+	searchField.tag = kTagSearchField;
+	[searchField.cell setPlaceholderString:@"Regular Expression"];
+	[scopeBarView addSubview:searchField];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(searchFieldDidEndEditing:) name:NSControlTextDidEndEditingNotification object:nil];
 	
@@ -136,9 +141,10 @@ static MCLogIDEConsoleArea *consoleArea = nil;
 
 - (void)searchFieldDidEndEditing:(NSNotification *)notification
 {
-	if ([notification object]!=searchFiled) {
-		return;
-	}
+	NSSearchField *searchField = [notification object];
+	
+	NSTextView *consoleTextView = searchField.consoleTextView;
+	MCLogIDEConsoleArea *consoleArea = searchField.consoleArea;
 	
 	// get rid of the annoying 'undeclared selector' warning
 	#pragma clang diagnostic push
@@ -146,53 +152,112 @@ static MCLogIDEConsoleArea *consoleArea = nil;
 	if ([consoleTextView respondsToSelector:@selector(clearConsoleItems)]) {
 		[consoleTextView performSelector:@selector(clearConsoleItems) withObject:nil];
 	}
+	
+	NSMutableDictionary *originConsoleItems = [originConsoleItemsMap objectForKey:hash(consoleArea)];
+	NSArray *sortedItems = [[originConsoleItems allValues] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+		NSTimeInterval a = [obj1 timestamp];
+		NSTimeInterval b = [obj2 timestamp];
+		if (a > b) {
+			return NSOrderedDescending;
+		}
+		
+		if(a < b) {
+			return NSOrderedAscending;
+		}
+		
+		return NSOrderedSame;
+	}];
 
 	if ([consoleArea respondsToSelector:@selector(_appendItems:)]) {
-		[consoleArea performSelector:@selector(_appendItems:) withObject:[originConsoleItems allValues]];
+		[consoleArea performSelector:@selector(_appendItems:) withObject:sortedItems];
 	}
 	#pragma clang diagnostic pop
 }
 
 - (void)activate:(NSNotification *)notification {
 	
-	if (![self initViews]) {
+	id IDEIndex = [notification object];
+	BOOL isAdded = [[workspace objectForKey:hash(IDEIndex)] boolValue];
+	if (isAdded) {
 		return;
 	}
-	
 	if ([self addCustomViews]) {
-		[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidUpdateNotification object:nil];
+		[workspace setObject:@(YES) forKey:hash(IDEIndex)];
 	}
 }
 
 - (void)clearConsoleItems:(NSNotification *)notification
 {
 	// clear up the old items when rebuild
-	originConsoleItems = [NSMutableDictionary dictionary];
+	originConsoleItemsMap = [NSMutableDictionary dictionary];
 }
 
 @end
+
+#pragma mark - NSSearchField (MCLog)
+
+static const void *kMCLogConsoleTextViewKey;
+static const void *kMCLogIDEConsoleAreaKey;
+
+@implementation NSSearchField (MCLog)
+
+- (void)setConsoleArea:(MCLogIDEConsoleArea *)consoleArea
+{
+	objc_setAssociatedObject(self, &kMCLogIDEConsoleAreaKey, consoleArea, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (MCLogIDEConsoleArea *)consoleArea
+{
+	return objc_getAssociatedObject(self, &kMCLogIDEConsoleAreaKey);
+}
+
+- (void)setConsoleTextView:(NSTextView *)consoleTextView
+{
+	objc_setAssociatedObject(self, &kMCLogConsoleTextViewKey, consoleTextView, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (NSTextView *)consoleTextView
+{
+	return objc_getAssociatedObject(self, &kMCLogConsoleTextViewKey);
+}
+
+@dynamic consoleArea;
+@dynamic consoleTextView;
+@end
+
+#pragma mark - MCLogIDEConsoleArea
 
 @implementation MCLogIDEConsoleArea
 
 - (BOOL)_shouldAppendItem:(id)obj;
 {
-	if (!consoleArea) {
-		consoleArea = self;	// get current console area
+	NSSearchField *searchField = getSearchField(self);
+	if (!searchField) {
+		return YES;
+	}
+	
+	if (!searchField.consoleArea) {
+		searchField.consoleArea = self;
+	}
+	
+	NSMutableDictionary *originConsoleItems = [originConsoleItemsMap objectForKey:hash(self)];
+	if (!originConsoleItems) {
 		originConsoleItems = [NSMutableDictionary dictionary];
 	}
 	
 	// store all console items.
 	[originConsoleItems setObject:obj forKey:@([obj timestamp])];
+	[originConsoleItemsMap setObject:originConsoleItems forKey:hash(self)];
 	
-	if (![searchFiled.stringValue length]) {
+	if (![searchField.stringValue length]) {
 		return YES;
 	}
 	
-	// test the regular expression
+	// test with the regular expression
 	NSString *content = [obj content];
 	NSRange range = NSMakeRange(0, content.length);
 	NSError *error;
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:searchFiled.stringValue
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:searchField.stringValue
 																		   options:(NSRegularExpressionCaseInsensitive|NSRegularExpressionDotMatchesLineSeparators)
 																			 error:&error];
     if (regex == nil) {
@@ -201,7 +266,7 @@ static MCLogIDEConsoleArea *consoleArea = nil;
         return YES;
     }
 	
-    NSArray *matches = [regex matchesInString:content options:0 range:range];
+    NSArray *matches = [regex matchesInString:content options:0 range:range];	
 	if ([matches count]) {
 		return YES;
 	}
@@ -211,6 +276,8 @@ static MCLogIDEConsoleArea *consoleArea = nil;
 
 @end
 
+#pragma mark -
+
 void replaceShouldAppendItemMethod()
 {
 	Class IDEConsoleArea = NSClassFromString(@"IDEConsoleArea");
@@ -218,4 +285,26 @@ void replaceShouldAppendItemMethod()
 	
 	IMP newImpl = class_getMethodImplementation([MCLogIDEConsoleArea class], @selector(_shouldAppendItem:));
 	method_setImplementation(originalMethod, newImpl);
+}
+
+NSSearchField *getSearchField(id consoleArea)
+{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+	if (![consoleArea respondsToSelector:@selector(scopeBarView)]) {
+		return nil;
+	}
+	
+	NSView *scopeBarView = [consoleArea performSelector:@selector(scopeBarView) withObject:nil];
+	return [scopeBarView viewWithTag:kTagSearchField];
+#pragma clang diagnositc pop
+}
+
+NSString *hash(id obj)
+{
+	if (!obj) {
+		return nil;
+	}
+	
+    return [NSString stringWithFormat:@"%lx", (long)obj];
 }
