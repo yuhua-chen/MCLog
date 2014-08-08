@@ -28,10 +28,10 @@ static IMP _clearText = nil;
 {
 	NSLog(@"%s, env: %s", __PRETTY_FUNCTION__, getenv(MCLOG_FLAG));
 	
-//	if (getenv(MCLOG_FLAG) && !strcmp(getenv(MCLOG_FLAG), "YES")) {
-//		// alreay installed plugin
-//		return;
-//    }
+	if (getenv(MCLOG_FLAG) && !strcmp(getenv(MCLOG_FLAG), "YES")) {
+		// alreay installed plugin
+		return;
+    }
 	
 	replaceShouldAppendItemMethod();
 	replaceClearTextMethod();
@@ -142,7 +142,7 @@ static IMP _clearText = nil;
 
 - (void)searchFieldDidEndEditing:(NSNotification *)notification
 {
-	if (![[notification object] isMemberOfClass:[NSTextField class]]) {
+	if (![[notification object] isMemberOfClass:[NSSearchField class]]) {
 		return;
 	}
 	
