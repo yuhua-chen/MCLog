@@ -119,6 +119,10 @@ static IMP _clearText = nil;
 		return NO;
 	}
 	
+	if ([scopeBarView viewWithTag:kTagSearchField]) {
+		return YES;
+	}
+	
 	NSRect frame = button.frame;
 	frame.origin.x -= button.frame.size.width + 205;
 	frame.size.width = 200.0;
