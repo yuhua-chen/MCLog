@@ -8,23 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
-@class MCLogIDEConsoleArea;
-
-@interface NSSearchField (MCLog)
-@property (nonatomic, strong) MCLogIDEConsoleArea *consoleArea;
-@property (nonatomic, strong) NSTextView *consoleTextView;
-@end
-
-@interface MCLogIDEConsoleArea : NSViewController
-- (BOOL)_shouldAppendItem:(id)obj;
-- (void)_clearText;
-@end
-
 @interface MCLog : NSObject
 + (void)pluginDidLoad:(NSBundle *)bundle;
 @end
 
-void replaceShouldAppendItemMethod();
-void replaceClearTextMethod();
-NSSearchField *getSearchField(id consoleArea);
-NSString *hash(id obj);
+
