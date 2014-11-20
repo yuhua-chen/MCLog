@@ -127,7 +127,7 @@ static const void *LogLevelAssociateKey;
             content = [NSString stringWithFormat:@"\\033[31m%@\\033[0m", content];
         } else {
             NSString *originalContent = [ControlCharsPattern stringByReplacingMatchesInString:content options:0 range:NSMakeRange(0, content.length) withTemplate:@""];
-            static NSString *patternString = @"\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\s+.+\\[[\\da-fA-F]+:[\\da-fA-F]+\\]\\s+-\\[%@\\]\\s+.*";
+            static NSString *patternString = @"^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\s+.+\\[[\\da-fA-F]+:[\\da-fA-F]+\\]\\s+-\\[%@\\]\\s+.*";
             static NSRegularExpression *VerboseLogPattern   = nil;
             static NSRegularExpression *InfoLogPattern      = nil;
             static NSRegularExpression *WarnLogPattern      = nil;
