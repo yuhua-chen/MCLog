@@ -23,11 +23,13 @@ static NSSearchField       *SearchField = nil;
 
 NSSearchField *getSearchField(id consoleArea);
 NSString *hash(id obj);
+
 NSArray *backtraceStack();
 void hookDVTTextStorage();
 void hookIDEConsoleAdaptor();
 void hookIDEConsoleArea();
 void hookIDEConsoleItem();
+NSRegularExpression * logItemPrefixPattern();
 
 
 typedef NS_ENUM(NSUInteger, MCLogLevel) {
@@ -36,7 +38,6 @@ typedef NS_ENUM(NSUInteger, MCLogLevel) {
     MCLogLevelWarn,
     MCLogLevelError
 };
-
 
 ////////////////////////////////////////////////////////////////////////////////////
 #pragma mark - NSSearchField (MCLog)
@@ -98,84 +99,52 @@ static const void *LogLevelAssociateKey;
     return [objc_getAssociatedObject(self, &LogLevelAssociateKey) unsignedIntegerValue];
 }
 
+
+
 - (void)updateItemAttribute:(id)item
 {
     NSError *error = nil;
-    static NSRegularExpression *TimePattern = nil;
-    if (TimePattern == nil) {
-        TimePattern = [NSRegularExpression regularExpressionWithPattern:@"^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\s+.*" options:NSRegularExpressionCaseInsensitive|NSRegularExpressionDotMatchesLineSeparators error:&error];
-        if (!TimePattern) {
-            MCLogger(@"%@", error);
-        }
+    NSString *logText = [item valueForKey:@"content"];
+    if ([[item valueForKey:@"error"] boolValue]) {
+        [NSString stringWithFormat:(LC_ESC @"[31m%@" LC_RESET), logText];
+        return;
     }
     
+    if (![[item valueForKey:@"output"] boolValue] || [[item valueForKey:@"outputRequestedByUser"] boolValue]) {
+        return;
+    }
+    
+    NSRange prefixRange = [logItemPrefixPattern() rangeOfFirstMatchInString:logText options:0 range:NSMakeRange(0, logText.length)];
+    if (prefixRange.location != 0 || logText.length <= prefixRange.length) {
+        return;
+    }
+
     static NSRegularExpression *ControlCharsPattern = nil;
     if (ControlCharsPattern == nil) {
-        ControlCharsPattern = [NSRegularExpression regularExpressionWithPattern:@"\\\\0?33\\[[\\d;]+m" options:0 error:&error];
+        ControlCharsPattern = [NSRegularExpression regularExpressionWithPattern:LC_ESC@"\\[[\\d;]+m" options:0 error:&error];
         if (!ControlCharsPattern) {
             MCLogger(@"%@", error);
         }
     }
+    NSString *content = [logText substringFromIndex:prefixRange.length];
+    NSString *originalContent = [ControlCharsPattern stringByReplacingMatchesInString:content options:0 range:NSMakeRange(0, content.length) withTemplate:@""];
     
-    NSString *content = [item valueForKey:@"content"];
-    if ([[item valueForKey:@"output"] boolValue] || [[item valueForKey:@"error"] boolValue]) {
-        if ([TimePattern matchesInString:content options:0 range:NSMakeRange(0, content.length)].count) {
-            //MCLogger(@"%@ matched pattern:'%@'", content, TimePattern);
-            //content = [content substringFromIndex:11];
-        }
-        if ([[item valueForKey:@"error"] boolValue]) {
-            content = [NSString stringWithFormat:@"\\033[31m%@\\033[0m", content];
-        } else {
-            NSString *originalContent = [ControlCharsPattern stringByReplacingMatchesInString:content options:0 range:NSMakeRange(0, content.length) withTemplate:@""];
-            static NSString *patternString = @"^\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\s+.+\\[[\\da-fA-F]+:[\\da-fA-F]+\\]\\s+-\\[%@\\]\\s+.*";
-            static NSRegularExpression *VerboseLogPattern   = nil;
-            static NSRegularExpression *InfoLogPattern      = nil;
-            static NSRegularExpression *WarnLogPattern      = nil;
-            static NSRegularExpression *ErrorLogPattern     = nil;
-            
-            if (!VerboseLogPattern) {
-                VerboseLogPattern = [NSRegularExpression regularExpressionWithPattern:[NSString stringWithFormat:patternString, @"VERBOSE"] options:NSRegularExpressionCaseInsensitive|NSRegularExpressionDotMatchesLineSeparators error:&error];
-                if (!VerboseLogPattern) {
-                    MCLogger(@"%@", error);
-                }
-            }
-            if (!InfoLogPattern) {
-                InfoLogPattern = [NSRegularExpression regularExpressionWithPattern:[NSString stringWithFormat:patternString, @"INFO"] options:NSRegularExpressionCaseInsensitive|NSRegularExpressionDotMatchesLineSeparators error:&error];
-                if (!InfoLogPattern) {
-                    MCLogger(@"%@", error);
-                }
-            }
-            if (!WarnLogPattern) {
-                WarnLogPattern = [NSRegularExpression regularExpressionWithPattern:[NSString stringWithFormat:patternString, @"WARN"] options:NSRegularExpressionCaseInsensitive|NSRegularExpressionDotMatchesLineSeparators error:&error];
-                if (!WarnLogPattern) {
-                    MCLogger(@"%@", error);
-                }
-            }
-            if (!ErrorLogPattern) {
-                ErrorLogPattern = [NSRegularExpression regularExpressionWithPattern:[NSString stringWithFormat:patternString, @"ERROR"] options:NSRegularExpressionCaseInsensitive|NSRegularExpressionDotMatchesLineSeparators error:&error];
-                if (!ErrorLogPattern) {
-                    MCLogger(@"%@", error);
-                }
-            }
-            NSRange matchingRange = (NSRange){.location = 0, .length = originalContent.length};
-            if ([VerboseLogPattern rangeOfFirstMatchInString:originalContent options:0 range:matchingRange].length == matchingRange.length) {
-                [item setLogLevel:MCLogLevelVerbose];
-            }
-            else if ([InfoLogPattern rangeOfFirstMatchInString:originalContent options:0 range:matchingRange].length == matchingRange.length) {
-                [item setLogLevel:MCLogLevelInfo];
-            }
-            else if ([WarnLogPattern rangeOfFirstMatchInString:originalContent options:0 range:matchingRange].length == matchingRange.length) {
-                [item setLogLevel:MCLogLevelWarn];
-            }
-            else if ([ErrorLogPattern rangeOfFirstMatchInString:originalContent options:0 range:matchingRange].length == matchingRange.length) {
-                [item setLogLevel:MCLogLevelError];
-            }
-        }
-    } else {
-        //content = [@"\\033[0m" stringByAppendingString:content];
+    if ([originalContent hasPrefix:@"-[VERBOSE]"]) {
+        [item setLogLevel:MCLogLevelVerbose];
+        //content = [NSString stringWithFormat:@""]
     }
-    
-    [item setValue:content forKey:@"content"];
+    else if ([originalContent hasPrefix:@"-[INFO]"]) {
+        [item setLogLevel:MCLogLevelInfo];
+        //content = [NSString stringWithFormat:@""]
+    }
+    else if ([originalContent hasPrefix:@"-[WARN]"]) {
+        [item setLogLevel:MCLogLevelWarn];
+        //content = [NSString stringWithFormat:@""]
+    }
+    else if ([originalContent hasPrefix:@"-[ERROR]"]) {
+        [item setLogLevel:MCLogLevelError];
+        //content = [NSString stringWithFormat:@""]
+    }
 }
 
 @end
@@ -192,7 +161,7 @@ static IMP IDEConsoleItemInitIMP = nil;
 {
     id item = IDEConsoleItemInitIMP(self, _cmd, arg1, arg2, arg3);
     [self updateItemAttribute:item];
-    MCLogger(@"log level:%zd", [item logLevel]);
+    MCLogger(@"%@,\nlog level:%zd", item, [item logLevel]);
     return item;
 }
 
@@ -373,14 +342,8 @@ static const void *kTimerKey;
     [self.timer invalidate];
     self.timer = nil;
     
-    NSError *error;
-    static NSRegularExpression *LogSeperatorPattern = nil;
-    if (LogSeperatorPattern == nil) {
-        LogSeperatorPattern = [NSRegularExpression regularExpressionWithPattern:@"\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\s\\S+\\[[\\da-fA-F]+\\:[\\da-fA-F]+\\]\\s" options:NSRegularExpressionCaseInsensitive error:&error];
-        if (!LogSeperatorPattern) {
-            MCLogger(@"%@", error);
-        }
-    }
+    NSRegularExpression *logSeperatorPattern = logItemPrefixPattern();
+
     NSString *unprocessedstring = self.unprocessedOutput;
     NSString *buffer = arg1;
     if (unprocessedstring.length > 0) {
@@ -388,14 +351,16 @@ static const void *kTimerKey;
         self.unprocessedOutput = nil;
     }
     
-    if (LogSeperatorPattern) {
-        NSArray *matches = [LogSeperatorPattern matchesInString:buffer options:0 range:NSMakeRange(0, [buffer length])];
+    if (logSeperatorPattern) {
+        NSArray *matches = [logSeperatorPattern matchesInString:buffer options:0 range:NSMakeRange(0, [buffer length])];
+        MCLogger(@"matchs: %@", matches);
         if (matches.count > 0) {
             NSRange lastMatchingRange = NSMakeRange(NSNotFound, 0);
             for (NSTextCheckingResult *result in matches) {
                 
                 if (lastMatchingRange.location != NSNotFound) {
                     NSString *logItemData = [buffer substringWithRange:NSMakeRange(lastMatchingRange.location, result.range.location - lastMatchingRange.location)];
+                    MCLogger(@"item: %@", logItemData);
                     originalOutputForStandardOutputIMP(self, _cmd, logItemData, arg2, arg3);
                 }
                 lastMatchingRange = result.range;
@@ -685,6 +650,22 @@ void hookIDEConsoleAdaptor()
 }
 
 #pragma mark - util methods
+
+NSRegularExpression * logItemPrefixPattern()
+{
+    static NSRegularExpression *pattern = nil;
+    if (pattern == nil) {
+        NSError *error = nil;
+        pattern = [NSRegularExpression regularExpressionWithPattern:@"\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\s+.+\\[[\\da-fA-F]+:[\\da-fA-F]+\\]\\s+"
+            options:NSRegularExpressionCaseInsensitive
+              error:&error];
+        if (!pattern) {
+            MCLogger(@"%@", error);
+        }
+    }
+    return pattern;
+}
+
 NSSearchField *getSearchField(id consoleArea)
 {
 #pragma clang diagnostic push
