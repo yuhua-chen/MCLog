@@ -30,6 +30,7 @@ void hookIDEConsoleAdaptor();
 void hookIDEConsoleArea();
 void hookIDEConsoleItem();
 NSRegularExpression * logItemPrefixPattern();
+NSRegularExpression * escCharPattern();
 
 
 typedef NS_ENUM(NSUInteger, MCLogLevel) {
@@ -131,19 +132,19 @@ static const void *LogLevelAssociateKey;
     
     if ([originalContent hasPrefix:@"-[VERBOSE]"]) {
         [item setLogLevel:MCLogLevelVerbose];
-        //content = [NSString stringWithFormat:@""]
+        content = [NSString stringWithFormat:(LC_ESC @"[34m%@" LC_RESET), content];
     }
     else if ([originalContent hasPrefix:@"-[INFO]"]) {
         [item setLogLevel:MCLogLevelInfo];
-        //content = [NSString stringWithFormat:@""]
+        content = [NSString stringWithFormat:(LC_ESC @"[32m%@" LC_RESET), content];
     }
     else if ([originalContent hasPrefix:@"-[WARN]"]) {
         [item setLogLevel:MCLogLevelWarn];
-        //content = [NSString stringWithFormat:@""]
+        content = [NSString stringWithFormat:(LC_ESC @"[33m%@" LC_RESET), content];
     }
     else if ([originalContent hasPrefix:@"-[ERROR]"]) {
         [item setLogLevel:MCLogLevelError];
-        //content = [NSString stringWithFormat:@""]
+        content = [NSString stringWithFormat:(LC_ESC @"[31m%@" LC_RESET), content];
     }
 }
 
@@ -161,7 +162,7 @@ static IMP IDEConsoleItemInitIMP = nil;
 {
     id item = IDEConsoleItemInitIMP(self, _cmd, arg1, arg2, arg3);
     [self updateItemAttribute:item];
-    MCLogger(@"%@,\nlog level:%zd", item, [item logLevel]);
+    MCLogger(@"%@, logLevel:%zd, adaptorType:%@", item, [item logLevel], [item valueForKey:@"adaptorType"]);
     return item;
 }
 
@@ -171,49 +172,56 @@ static IMP IDEConsoleItemInitIMP = nil;
 
 ///////////////////////////////////////////////////////////////////////////////////
 #pragma mark - MCLogIDEConsoleArea
-
+static IMP OriginalShouldAppendItem = nil;
 @interface MCLogIDEConsoleArea : NSViewController
 - (BOOL)_shouldAppendItem:(id)obj;
 - (void)_clearText;
 @end
 
-static IMP originalClearTextIMP = nil;
+static IMP OriginalClearTextIMP = nil;
 @implementation MCLogIDEConsoleArea
 
 - (BOOL)_shouldAppendItem:(id)obj;
 {
-    MCLogger(@"should append item:[%@]\n%@\nadaptorType:%@; kind:%zd", [obj class], obj, [obj valueForKey:@"adaptorType"], [obj valueForKey:@"kind"]);
-    
 	NSSearchField *searchField = getSearchField(self);
+    if (!searchField.consoleArea) {
+        searchField.consoleArea = self;
+    }
+    
+    NSMutableDictionary *originConsoleItems = [originConsoleItemsMap objectForKey:hash(self)];
+    if (!originConsoleItems) {
+        originConsoleItems = [NSMutableDictionary dictionary];
+    }
+    
+    NSInteger filterMode = [[self valueForKey:@"filterMode"] intValue];
+    BOOL shouldShowLogLevel = YES;
+    if (filterMode >= MCLogLevelVerbose) {
+        shouldShowLogLevel = [obj logLevel] >= filterMode
+        || [[obj valueForKey:@"input"] boolValue]
+        || [[obj valueForKey:@"prompt"] boolValue]
+        || [[obj valueForKey:@"outputRequestedByUser"] boolValue]
+        || [[obj valueForKey:@"adaptorType"] hasSuffix:@".Debugger"];
+    } else {
+        shouldShowLogLevel = [OriginalShouldAppendItem(self, _cmd, obj) boolValue];
+    }
+    
+    if (!shouldShowLogLevel) {
+        if (searchField) {
+            // store all console items.
+            [originConsoleItems setObject:obj forKey:@([obj timestamp])];
+            [originConsoleItemsMap setObject:originConsoleItems forKey:hash(self)];
+        }
+        return NO;
+    }
+    
 	if (!searchField) {
 		return YES;
 	}
-	
-	if (!searchField.consoleArea) {
-		searchField.consoleArea = self;
-	}
-	
-	NSMutableDictionary *originConsoleItems = [originConsoleItemsMap objectForKey:hash(self)];
-	if (!originConsoleItems) {
-		originConsoleItems = [NSMutableDictionary dictionary];
-	}
+  
     
-//    if (originConsoleItems[@([obj timestamp])] == nil) {
-//       [MCLogIDEConsoleArea updateItemAttribute:obj];
-//    }
-	
 	// store all console items.
 	[originConsoleItems setObject:obj forKey:@([obj timestamp])];
 	[originConsoleItemsMap setObject:originConsoleItems forKey:hash(self)];
-    
-	if (![searchField.stringValue length]) {
-        NSInteger filterMode = [[self valueForKey:@"filterMode"] intValue];
-        if (filterMode >= MCLogLevelVerbose) {
-            MCLogger(@"log level:%zd; filter mode:%zd", [obj logLevel], filterMode);
-            return [obj logLevel] >= filterMode;
-        }
-        return YES;
-	}
 	
 	// test with the regular expression
 	NSString *content = [obj content];
@@ -229,7 +237,11 @@ static IMP originalClearTextIMP = nil;
     }
 	
     NSArray *matches = [regex matchesInString:content options:0 range:range];	
-	if ([matches count]) {
+	if ([matches count] > 0
+        || [[obj valueForKey:@"input"] boolValue]
+        || [[obj valueForKey:@"prompt"] boolValue]
+        || [[obj valueForKey:@"outputRequestedByUser"] boolValue]
+        || [[obj valueForKey:@"adaptorType"] hasSuffix:@".Debugger"]) {
 		return YES;
 	}
 
@@ -238,7 +250,7 @@ static IMP originalClearTextIMP = nil;
 
 - (void)_clearText
 {
-	originalClearTextIMP(self, _cmd);
+	OriginalClearTextIMP(self, _cmd);
 	[originConsoleItemsMap removeObjectForKey:hash(self)];
 }
 @end
@@ -248,33 +260,56 @@ static IMP originalClearTextIMP = nil;
 
 ///////////////////////////////////////////////////////////////////////////////////
 #pragma mark - MCDVTTextStorage
-static IMP originalAppendAttributedStringIMP    = nil;
-static IMP originalFixAttributesInRangeIMP      = nil;
+static IMP OriginalFixAttributesInRangeIMP      = nil;
 
+static void *kLastAttributeKey;
 @interface MCDVTTextStorage : NSTextStorage
 - (void)fixAttributesInRange:(NSRange)range;
-- (void)appendAttributedString:(NSAttributedString *)attrString;
+- (void)setLastAttribute:(NSDictionary *)attribute;
+- (NSDictionary *)lastAttribute;
 @end
 
 @implementation MCDVTTextStorage
-
-- (void)appendAttributedString:(NSAttributedString *)attrString
+- (void)setLastAttribute:(NSDictionary *)attribute
 {
-    MCLogger(@"self:%@\ntarget:%@", self, SearchField.consoleTextView.textStorage);
-    originalAppendAttributedStringIMP(self, _cmd, attrString);
-//    if (self == SearchField.consoleTextView.textStorage) {
-//        MCLogger(@"target textStorage! append attrString:%@", attrString);
-//    }
+    objc_setAssociatedObject(self, &kLastAttributeKey, attribute, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (NSDictionary *)lastAttribute
+{
+    return objc_getAssociatedObject(self, &kLastAttributeKey);
 }
 
 - (void)fixAttributesInRange:(NSRange)range
 {
-    MCLogger(@"self:%@\ntarget:%@", self, SearchField.consoleTextView.textStorage);
-    originalFixAttributesInRangeIMP(self, _cmd, range);
+    OriginalFixAttributesInRangeIMP(self, _cmd, range);
+ 
+    NSRange escRange = [self.string rangeOfString:LC_ESC options:0 range:range];
+    if (escRange.location == NSNotFound) {
+        return;
+    }
     
-//    if (self == SearchField.consoleTextView.textStorage) {
-//        MCLogger(@"target textStorage! fix attr:%@", [self.string substringWithRange:range]);
+    __block NSRange lastRange = NSMakeRange(NSNotFound, 0);
+    [escCharPattern() enumerateMatchesInString:self.string options:0 range:range usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
+        
+    }];
+    
+//    NSArray *matches = [escCharPattern() matchesInString:self.string options:0 range:range];
+//    if (matches.count == 0) {
+//        return;
 //    }
+//    
+//    for (NSUInteger i = 0; i < matches.count; ++i) {
+//        NSTextCheckingResult *result = matches[i];
+//        if (i == 0 && result.range.location > range.location && self.lastAttribute) {
+//            [self addAttributes:self.lastAttribute range:NSMakeRange(range.location, result.range.location - range.location)];
+//            self.lastAttribute = nil;
+//        }
+//        else {
+//            
+//        }
+//    }
+    
 }
 
 @end
@@ -353,14 +388,12 @@ static const void *kTimerKey;
     
     if (logSeperatorPattern) {
         NSArray *matches = [logSeperatorPattern matchesInString:buffer options:0 range:NSMakeRange(0, [buffer length])];
-        MCLogger(@"matchs: %@", matches);
         if (matches.count > 0) {
             NSRange lastMatchingRange = NSMakeRange(NSNotFound, 0);
             for (NSTextCheckingResult *result in matches) {
                 
                 if (lastMatchingRange.location != NSNotFound) {
                     NSString *logItemData = [buffer substringWithRange:NSMakeRange(lastMatchingRange.location, result.range.location - lastMatchingRange.location)];
-                    MCLogger(@"item: %@", logItemData);
                     originalOutputForStandardOutputIMP(self, _cmd, logItemData, arg2, arg3);
                 }
                 lastMatchingRange = result.range;
@@ -503,6 +536,10 @@ static const void *kTimerKey;
         [self filterPopupButton:filterButton addItemWithTitle:@"Error" tag:MCLogLevelError];
     }
     
+    NSInteger selectedItem = [filterButton indexOfItemWithTag:[[consoleTextView valueForKey:@"logMode"] intValue]];
+    if (selectedItem < 0 || selectedItem >= [filterButton numberOfItems]) {
+        [filterButton selectItemAtIndex:0];
+    }
     
     if ([scopeBarView viewWithTag:kTagSearchField]) {
         return YES;
@@ -606,12 +643,13 @@ void hookIDEConsoleArea()
     Class IDEConsoleArea = NSClassFromString(@"IDEConsoleArea");
     //_shouldAppendItem
     Method shouldAppendItem = class_getInstanceMethod(IDEConsoleArea, @selector(_shouldAppendItem:));
+    OriginalShouldAppendItem = method_getImplementation(shouldAppendItem);
     IMP hookedShouldAppendItemIMP = class_getMethodImplementation([MCLogIDEConsoleArea class], @selector(_shouldAppendItem:));
     method_setImplementation(shouldAppendItem, hookedShouldAppendItemIMP);
     
     //_clearText
     Method clearText = class_getInstanceMethod(IDEConsoleArea, @selector(_clearText));
-    originalClearTextIMP = method_getImplementation(clearText);
+    OriginalClearTextIMP = method_getImplementation(clearText);
     IMP newImpl = class_getMethodImplementation([MCLogIDEConsoleArea class], @selector(_clearText));
     method_setImplementation(clearText, newImpl);
 }
@@ -628,14 +666,14 @@ void hookIDEConsoleItem()
 void hookDVTTextStorage()
 {
     Class DVTTextStorage = NSClassFromString(@"DVTTextStorage");
-    //appendAttributedString
-    Method appendAttributedString = class_getInstanceMethod(DVTTextStorage, @selector(appendAttributedString:));
-    originalAppendAttributedStringIMP = method_getImplementation(appendAttributedString);
-    IMP newAppendAttributedStringIMP = class_getMethodImplementation([MCDVTTextStorage class], @selector(appendAttributedString:));
-    method_setImplementation(appendAttributedString, newAppendAttributedStringIMP);
+//    //appendAttributedString
+//    Method appendAttributedString = class_getInstanceMethod(DVTTextStorage, @selector(appendAttributedString:));
+//    originalAppendAttributedStringIMP = method_getImplementation(appendAttributedString);
+//    IMP newAppendAttributedStringIMP = class_getMethodImplementation([MCDVTTextStorage class], @selector(appendAttributedString:));
+//    method_setImplementation(appendAttributedString, newAppendAttributedStringIMP);
     
     Method fixAttributesInRange = class_getInstanceMethod(DVTTextStorage, @selector(fixAttributesInRange:));
-    originalFixAttributesInRangeIMP = method_getImplementation(fixAttributesInRange);
+    OriginalFixAttributesInRangeIMP = method_getImplementation(fixAttributesInRange);
     IMP newFixAttributesInRangeIMP = class_getMethodImplementation([MCDVTTextStorage class], @selector(fixAttributesInRange:));
     method_setImplementation(fixAttributesInRange, newFixAttributesInRangeIMP);
 }
@@ -656,9 +694,22 @@ NSRegularExpression * logItemPrefixPattern()
     static NSRegularExpression *pattern = nil;
     if (pattern == nil) {
         NSError *error = nil;
-        pattern = [NSRegularExpression regularExpressionWithPattern:@"\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\s+.+\\[[\\da-fA-F]+:[\\da-fA-F]+\\]\\s+"
+        pattern = [NSRegularExpression regularExpressionWithPattern:@"\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\[.:]\\d{3}\\s+.+\\[[\\da-fA-F]+:[\\da-fA-F]+\\]\\s+"
             options:NSRegularExpressionCaseInsensitive
               error:&error];
+        if (!pattern) {
+            MCLogger(@"%@", error);
+        }
+    }
+    return pattern;
+}
+
+NSRegularExpression * escCharPattern()
+{
+    static NSRegularExpression *pattern = nil;
+    if (pattern == nil) {
+        NSError *error = nil;
+        pattern = [NSRegularExpression regularExpressionWithPattern:(LC_ESC @"\\[([\\d;]*\\d+)m") options:0 error:&error];
         if (!pattern) {
             MCLogger(@"%@", error);
         }
