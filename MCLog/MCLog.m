@@ -15,6 +15,8 @@
 
 #define MCLogger(fmt, ...) NSLog((@"[MCLog] %s(Line:%d) " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
 
+#define NSColorWithHexRGB(rgb) [NSColor colorWithCalibratedRed:((rgb) >> 16 & 0xFF) / 255.f green:((rgb) >> 8 & 0xFF) / 255.f  blue:((rgb) & 0xFF) / 255.f  alpha:1.f]
+
 @class MCLogIDEConsoleArea;
 
 static NSMutableDictionary *originConsoleItemsMap;
@@ -146,6 +148,8 @@ static const void *LogLevelAssociateKey;
         [item setLogLevel:MCLogLevelError];
         content = [NSString stringWithFormat:(LC_ESC @"[31m%@" LC_RESET), content];
     }
+    
+    [item setValue:[[logText substringWithRange:prefixRange] stringByAppendingString:content] forKey:@"content"];
 }
 
 @end
@@ -265,11 +269,58 @@ static IMP OriginalFixAttributesInRangeIMP      = nil;
 static void *kLastAttributeKey;
 @interface MCDVTTextStorage : NSTextStorage
 - (void)fixAttributesInRange:(NSRange)range;
+@end
+
+@interface NSObject (DVTTextStorage)
 - (void)setLastAttribute:(NSDictionary *)attribute;
 - (NSDictionary *)lastAttribute;
+- (void)updateAttributes:(NSMutableDictionary *)attrs withANSIESCString:(NSString *)ansiEscString;
 @end
 
 @implementation MCDVTTextStorage
+
+- (void)fixAttributesInRange:(NSRange)range
+{
+    OriginalFixAttributesInRangeIMP(self, _cmd, range);
+    
+    __block NSRange lastRange = NSMakeRange(range.location, 0);
+    NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
+    if (self.lastAttribute.count > 0) {
+        [attrs setValuesForKeysWithDictionary:self.lastAttribute];
+    }
+
+    [escCharPattern() enumerateMatchesInString:self.string options:0 range:range usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
+        if (attrs.count > 0) {
+            NSRange attrRange = NSMakeRange(lastRange.location, result.range.location - lastRange.location);
+            [self addAttributes:attrs range:attrRange];
+            MCLogger(@"apply attributes:%@\nin range:[%zd, %zd], affected string:%@", attrs, attrRange.location, attrRange.length, [self.string substringWithRange:attrRange]);
+        }
+        
+        NSString *attrsDesc = [self.string substringWithRange:[result rangeAtIndex:1]];
+        if (attrsDesc.length == 0) {
+            [self addAttributes:@{
+                                  NSFontAttributeName: [NSFont systemFontOfSize:0.000001f],
+                                  NSForegroundColorAttributeName: [NSColor clearColor]
+                                 }
+                          range:result.range];
+            lastRange = result.range;
+            return;
+        }
+        [self updateAttributes:attrs withANSIESCString:attrsDesc];
+        [self addAttributes:@{
+                              NSFontAttributeName: [NSFont systemFontOfSize:0.000001f],
+                              NSForegroundColorAttributeName: [NSColor clearColor]
+                              }
+                      range:result.range];
+        lastRange = result.range;
+    }];
+    self.lastAttribute = attrs;
+}
+
+@end
+
+@implementation NSObject (DVTTextStorage)
+
 - (void)setLastAttribute:(NSDictionary *)attribute
 {
     objc_setAssociatedObject(self, &kLastAttributeKey, attribute, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -280,36 +331,96 @@ static void *kLastAttributeKey;
     return objc_getAssociatedObject(self, &kLastAttributeKey);
 }
 
-- (void)fixAttributesInRange:(NSRange)range
+- (void)updateAttributes:(NSMutableDictionary *)attrs withANSIESCString:(NSString *)ansiEscString
 {
-    OriginalFixAttributesInRangeIMP(self, _cmd, range);
- 
-    NSRange escRange = [self.string rangeOfString:LC_ESC options:0 range:range];
-    if (escRange.location == NSNotFound) {
-        return;
+    NSArray *attrComponents = [ansiEscString componentsSeparatedByString:@";"];
+    for (NSString *attrName in attrComponents) {
+        NSUInteger attrCode = [attrName integerValue];
+        switch (attrCode) {
+            case 0:
+                [attrs removeAllObjects];
+                break;
+                
+            case 1:
+                [attrs setObject:[NSFont boldSystemFontOfSize:11.f] forKey:NSFontAttributeName];
+                break;
+                
+            case 4:
+                [attrs setObject:@( NSUnderlineStyleSingle ) forKey:NSUnderlineStyleAttributeName];
+                break;
+                
+            case 24:
+                [attrs setObject:@(NSUnderlineStyleNone ) forKey:NSUnderlineStyleAttributeName];
+                break;
+                //foreground color
+            case 30: //black
+                [attrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+                break;
+                
+            case 31: // Red
+                [attrs setObject:NSColorWithHexRGB(0xd70000) forKey:NSForegroundColorAttributeName];
+                break;
+                
+            case 32: // Green
+                [attrs setObject:NSColorWithHexRGB(0x00ff00) forKey:NSForegroundColorAttributeName];
+                break;
+                
+            case 33: // Yellow
+                [attrs setObject:NSColorWithHexRGB(0xffff00) forKey:NSForegroundColorAttributeName];
+                break;
+                
+            case 34: // Blue
+                [attrs setObject:NSColorWithHexRGB(0x005fff) forKey:NSForegroundColorAttributeName];
+                break;
+                
+            case 35: // purple
+                [attrs setObject:NSColorWithHexRGB(0xff00ff) forKey:NSForegroundColorAttributeName];
+                break;
+                
+            case 36: // cyan
+                [attrs setObject:NSColorWithHexRGB(0x00ffff) forKey:NSForegroundColorAttributeName];
+                break;
+                
+            case 37: // gray
+                [attrs setObject:NSColorWithHexRGB(0x808080) forKey:NSForegroundColorAttributeName];
+                break;
+                //background color
+            case 40: //black
+                [attrs setObject:[NSColor blackColor] forKey:NSBackgroundColorAttributeName];
+                break;
+                
+            case 41: // Red
+                [attrs setObject:NSColorWithHexRGB(0xd70000) forKey:NSBackgroundColorAttributeName];
+                break;
+                
+            case 42: // Green
+                [attrs setObject:NSColorWithHexRGB(0x00ff00) forKey:NSBackgroundColorAttributeName];
+                break;
+                
+            case 43: // Yellow
+                [attrs setObject:NSColorWithHexRGB(0xffff00) forKey:NSBackgroundColorAttributeName];
+                break;
+                
+            case 44: // Blue
+                [attrs setObject:NSColorWithHexRGB(0x005fff) forKey:NSBackgroundColorAttributeName];
+                break;
+                
+            case 45: // purple
+                [attrs setObject:NSColorWithHexRGB(0xff00ff) forKey:NSBackgroundColorAttributeName];
+                break;
+                
+            case 46: // cyan
+                [attrs setObject:NSColorWithHexRGB(0x00ffff) forKey:NSBackgroundColorAttributeName];
+                break;
+                
+            case 47: // gray
+                [attrs setObject:NSColorWithHexRGB(0x808080) forKey:NSBackgroundColorAttributeName];
+                break;
+                
+            default:
+                break;
+        }
     }
-    
-    __block NSRange lastRange = NSMakeRange(NSNotFound, 0);
-    [escCharPattern() enumerateMatchesInString:self.string options:0 range:range usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
-        
-    }];
-    
-//    NSArray *matches = [escCharPattern() matchesInString:self.string options:0 range:range];
-//    if (matches.count == 0) {
-//        return;
-//    }
-//    
-//    for (NSUInteger i = 0; i < matches.count; ++i) {
-//        NSTextCheckingResult *result = matches[i];
-//        if (i == 0 && result.range.location > range.location && self.lastAttribute) {
-//            [self addAttributes:self.lastAttribute range:NSMakeRange(range.location, result.range.location - range.location)];
-//            self.lastAttribute = nil;
-//        }
-//        else {
-//            
-//        }
-//    }
-    
 }
 
 @end
@@ -666,11 +777,6 @@ void hookIDEConsoleItem()
 void hookDVTTextStorage()
 {
     Class DVTTextStorage = NSClassFromString(@"DVTTextStorage");
-//    //appendAttributedString
-//    Method appendAttributedString = class_getInstanceMethod(DVTTextStorage, @selector(appendAttributedString:));
-//    originalAppendAttributedStringIMP = method_getImplementation(appendAttributedString);
-//    IMP newAppendAttributedStringIMP = class_getMethodImplementation([MCDVTTextStorage class], @selector(appendAttributedString:));
-//    method_setImplementation(appendAttributedString, newAppendAttributedStringIMP);
     
     Method fixAttributesInRange = class_getInstanceMethod(DVTTextStorage, @selector(fixAttributesInRange:));
     OriginalFixAttributesInRangeIMP = method_getImplementation(fixAttributesInRange);
@@ -694,7 +800,7 @@ NSRegularExpression * logItemPrefixPattern()
     static NSRegularExpression *pattern = nil;
     if (pattern == nil) {
         NSError *error = nil;
-        pattern = [NSRegularExpression regularExpressionWithPattern:@"\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\[.:]\\d{3}\\s+.+\\[[\\da-fA-F]+:[\\da-fA-F]+\\]\\s+"
+        pattern = [NSRegularExpression regularExpressionWithPattern:@"\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}[\\.:]\\d{3}\\s+.+\\[[\\da-fA-F]+:[\\da-fA-F]+\\]\\s+"
             options:NSRegularExpressionCaseInsensitive
               error:&error];
         if (!pattern) {
