@@ -166,7 +166,7 @@ static IMP IDEConsoleItemInitIMP = nil;
 {
     id item = IDEConsoleItemInitIMP(self, _cmd, arg1, arg2, arg3);
     [self updateItemAttribute:item];
-    MCLogger(@"%@, logLevel:%zd, adaptorType:%@", item, [item logLevel], [item valueForKey:@"adaptorType"]);
+    //MCLogger(@"%@, logLevel:%zd, adaptorType:%@", item, [item logLevel], [item valueForKey:@"adaptorType"]);
     return item;
 }
 
@@ -293,7 +293,7 @@ static void *kLastAttributeKey;
         if (attrs.count > 0) {
             NSRange attrRange = NSMakeRange(lastRange.location, result.range.location - lastRange.location);
             [self addAttributes:attrs range:attrRange];
-            MCLogger(@"apply attributes:%@\nin range:[%zd, %zd], affected string:%@", attrs, attrRange.location, attrRange.length, [self.string substringWithRange:attrRange]);
+            //MCLogger(@"apply attributes:%@\nin range:[%zd, %zd], affected string:%@", attrs, attrRange.location, attrRange.length, [self.string substringWithRange:attrRange]);
         }
         
         NSString *attrsDesc = [self.string substringWithRange:[result rangeAtIndex:1]];
