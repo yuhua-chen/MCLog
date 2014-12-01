@@ -10,31 +10,31 @@
 	<string>MCLog</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>789CF47E-98B7-4BB5-8400-CD87C045EF74</key>
-		<string>ssh://github.com/yuhua-chen/MCLog.git</string>
+		<key>22F9C8F305497B927E2040B29E0DB7F039F7B3DB</key>
+		<string>https://github.com/alexlee002/MCLog</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>MCLog.xcodeproj/project.xcworkspace</string>
+	<string>MCLog.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>789CF47E-98B7-4BB5-8400-CD87C045EF74</key>
+		<key>22F9C8F305497B927E2040B29E0DB7F039F7B3DB</key>
 		<string>../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>ssh://github.com/yuhua-chen/MCLog.git</string>
+	<string>https://github.com/alexlee002/MCLog</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>789CF47E-98B7-4BB5-8400-CD87C045EF74</string>
+	<string>22F9C8F305497B927E2040B29E0DB7F039F7B3DB</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>789CF47E-98B7-4BB5-8400-CD87C045EF74</string>
+			<string>22F9C8F305497B927E2040B29E0DB7F039F7B3DB</string>
 			<key>IDESourceControlWCCName</key>
-			<string>MCLog_github</string>
+			<string>MCLog</string>
 		</dict>
 	</array>
 </dict>

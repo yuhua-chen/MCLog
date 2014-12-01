@@ -8,23 +8,19 @@
 
 #import <Foundation/Foundation.h>
 
-@class MCLogIDEConsoleArea;
+#if TARGET_OS_IPHONE
+#define LC_ESC @"\xC2\xA0"
+#else
+#define LC_ESC @"\033"
+#endif
 
-@interface NSSearchField (MCLog)
-@property (nonatomic, strong) MCLogIDEConsoleArea *consoleArea;
-@property (nonatomic, strong) NSTextView *consoleTextView;
-@end
 
-@interface MCLogIDEConsoleArea : NSViewController
-- (BOOL)_shouldAppendItem:(id)obj;
-- (void)_clearText;
-@end
+
+// Reset colors
+#define LC_RESET				LC_ESC @"[0m"
 
 @interface MCLog : NSObject
 + (void)pluginDidLoad:(NSBundle *)bundle;
 @end
 
-void replaceShouldAppendItemMethod();
-void replaceClearTextMethod();
-NSSearchField *getSearchField(id consoleArea);
-NSString *hash(id obj);
+
