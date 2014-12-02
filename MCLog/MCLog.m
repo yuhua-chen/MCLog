@@ -531,9 +531,6 @@ static const void *kTimerKey;
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 @interface MCLog ()<NSTextFieldDelegate>
-{
-    NSMutableDictionary *workspace;
-}
 @end
 
 @implementation MCLog
@@ -575,8 +572,7 @@ static const void *kTimerKey;
 {
     self = [super init];
     if (self) {
-        workspace = [NSMutableDictionary dictionary];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activate:) name:@"IDEIndexWillIndexWorkspaceNotification" object:nil];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activate:) name:@"IDEControlGroupDidChangeNotificationName" object:nil];
     }
     return self;
 }
@@ -733,16 +729,9 @@ static const void *kTimerKey;
 #pragma clang diagnostic pop
 }
 
-- (void)activate:(NSNotification *)notification {
-    
-    id IDEIndex = [notification object];
-    BOOL isAdded = [[workspace objectForKey:hash(IDEIndex)] boolValue];
-    if (isAdded) {
-        return;
-    }
-    if ([self addCustomViews]) {
-        [workspace setObject:@(YES) forKey:hash(IDEIndex)];
-    }
+- (void)activate:(NSNotification *)notification
+{
+	[self addCustomViews];
 }
 
 @end
