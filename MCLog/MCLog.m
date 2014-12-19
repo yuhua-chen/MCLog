@@ -19,9 +19,9 @@
 
 @class MCLogIDEConsoleArea;
 
-static NSMutableDictionary *originConsoleItemsMap;
-static MCLogIDEConsoleArea *consoleArea = nil;
-static NSSearchField       *SearchField = nil;
+static NSMutableDictionary      *OriginConsoleItemsMap  = nil;
+//static NSSearchField            *SearchField            = nil;
+static NSMutableDictionary      *SearchPatternsDic      = nil;
 
 NSSearchField *getSearchField(id consoleArea);
 NSString *hash(id obj);
@@ -41,6 +41,88 @@ typedef NS_ENUM(NSUInteger, MCLogLevel) {
     MCLogLevelWarn,
     MCLogLevelError
 };
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+@interface MCOrderedMap : NSObject
+@property (nonatomic, strong) NSMutableOrderedSet   *keys;
+@property (nonatomic, strong) NSMutableArray        *items;
+
+- (void)addObject:(id)object forKey:(id)key;
+- (id)removeObjectForKey:(id)key;
+- (id)objectForKey:(id)key;
+- (BOOL)containsObjectForKey:(id)key;
+- (NSArray *)OrderedKeys;
+- (NSArray *)orderedItems;
+@end
+
+#define verifyMap() \
+do{\
+NSAssert(self.keys.count == self.items.count, @"keys and items are not matched!");\
+}while(0)
+
+@implementation MCOrderedMap
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _keys   = [NSMutableOrderedSet orderedSet];
+        _items  = [NSMutableArray array];
+    }
+    return self;
+}
+
+- (id)objectForKey:(id)key {
+    verifyMap();
+    NSUInteger keyIndex = [self.keys indexOfObject:key];
+    if (keyIndex != NSNotFound) {
+        return self.items[keyIndex];
+    }
+    return nil;
+}
+
+- (void)addObject:(id)object forKey:(id)key {
+    NSParameterAssert(key != nil && object != nil);
+    verifyMap();
+    NSUInteger keyIndex = [self.keys indexOfObject:key];
+    if (keyIndex == NSNotFound) {
+        [self.keys addObject:key];
+        keyIndex = [self.keys indexOfObject:key];
+        [self.items addObject:object];
+    } else {
+        [self.items replaceObjectAtIndex:keyIndex withObject:object];
+    }
+}
+
+- (id)removeObjectForKey:(id)key {
+    verifyMap();
+    NSUInteger keyIndex = [self.keys indexOfObject:key];
+    if (keyIndex != NSNotFound) {
+        [self.keys removeObject:key];
+        id object = self.items[keyIndex];
+        [self.items removeObjectAtIndex:keyIndex];
+        return object;
+    }
+    return nil;
+}
+
+- (BOOL)containsObjectForKey:(id)key {
+    verifyMap();
+    return [self.keys containsObject:key];
+}
+
+
+- (NSArray *)OrderedKeys {
+    verifyMap();
+    return [[self.keys array] copy];
+}
+
+- (NSArray *)orderedItems {
+    verifyMap();
+    return [self.items copy];
+}
+
+@end
 
 ////////////////////////////////////////////////////////////////////////////////////
 #pragma mark - NSSearchField (MCLog)
@@ -109,7 +191,8 @@ static const void *LogLevelAssociateKey;
     NSError *error = nil;
     NSString *logText = [item valueForKey:@"content"];
     if ([[item valueForKey:@"error"] boolValue]) {
-        [NSString stringWithFormat:(LC_ESC @"[31m%@" LC_RESET), logText];
+        logText = [NSString stringWithFormat:(LC_ESC @"[31m%@" LC_RESET), logText];
+        [item setValue:logText forKey:@"content"];
         return;
     }
     
@@ -147,6 +230,30 @@ static const void *LogLevelAssociateKey;
     else if ([originalContent hasPrefix:@"-[ERROR]"]) {
         [item setLogLevel:MCLogLevelError];
         content = [NSString stringWithFormat:(LC_ESC @"[31m%@" LC_RESET), content];
+    } else {
+        static NSMutableArray *extraErrorPatterns = nil;
+        if (extraErrorPatterns == nil) {
+            extraErrorPatterns = [NSMutableArray array];
+            for (NSString *patternStr in @[
+                                           @"^\\s*\\*\\*\\* Terminating app due to uncaught exception '.+', reason: '.+'",
+                                           @"^\\s*(\\+|-)\\[[a-zA-Z_]\\w*\\s[a-zA-Z_]\\w*[(:([a-zA-Z_]\\w*)?)]*\\]: unrecognized selector sent to (class|instance) [\\dxXa-fA-F]+",
+                                           @"^\\s*\\*\\*\\* Assertion failure in (\\+|-)\\[[a-zA-Z_]\\w*\\s[a-zA-Z_]\\w*[(:([a-zA-Z_]\\w*)?)]*\\],",
+                                           @"^\\s*\\*\\*\\* Terminating app due to uncaught exception of class '[a-zA-Z_]\\w+'"
+                                           ]) {
+                NSRegularExpression *r = [NSRegularExpression regularExpressionWithPattern:patternStr options:0 error:&error];
+                if (!r) {
+                    MCLogger(@"ERROR:%@", error);
+                    continue;
+                }
+                [extraErrorPatterns addObject:r];
+            }
+        }
+        for (NSRegularExpression *r in extraErrorPatterns) {
+            if ([r matchesInString:originalContent options:0 range:NSMakeRange(0, originalContent.length)].count > 0) {
+                content = [NSString stringWithFormat:(LC_ESC @"[31m%@" LC_RESET), content];
+                break;
+            }
+        }
     }
     
     [item setValue:[[logText substringWithRange:prefixRange] stringByAppendingString:content] forKey:@"content"];
@@ -192,9 +299,9 @@ static IMP OriginalClearTextIMP = nil;
         searchField.consoleArea = self;
     }
     
-    NSMutableDictionary *originConsoleItems = [originConsoleItemsMap objectForKey:hash(self)];
+    MCOrderedMap *originConsoleItems = OriginConsoleItemsMap[hash(self)];
     if (!originConsoleItems) {
-        originConsoleItems = [NSMutableDictionary dictionary];
+        originConsoleItems = [[MCOrderedMap alloc] init];
     }
     
     NSInteger filterMode = [[self valueForKey:@"filterMode"] intValue];
@@ -212,8 +319,10 @@ static IMP OriginalClearTextIMP = nil;
     if (!shouldShowLogLevel) {
         if (searchField) {
             // store all console items.
-            [originConsoleItems setObject:obj forKey:@([obj timestamp])];
-            [originConsoleItemsMap setObject:originConsoleItems forKey:hash(self)];
+            if (![originConsoleItems containsObjectForKey:@([obj timestamp])]) {
+                [originConsoleItems addObject:obj forKey:@([obj timestamp])];
+            }
+            [OriginConsoleItemsMap setObject:originConsoleItems forKey:hash(self)];
         }
         return NO;
     }
@@ -224,22 +333,38 @@ static IMP OriginalClearTextIMP = nil;
   
     
 	// store all console items.
-	[originConsoleItems setObject:obj forKey:@([obj timestamp])];
-	[originConsoleItemsMap setObject:originConsoleItems forKey:hash(self)];
+    if (![originConsoleItems containsObjectForKey:@([obj timestamp])]) {
+        [originConsoleItems addObject:obj forKey:@([obj timestamp])];
+    }
+	[OriginConsoleItemsMap setObject:originConsoleItems forKey:hash(self)];
+    
+    if (searchField.stringValue.length == 0) {
+        return YES;
+    }
 	
 	// test with the regular expression
 	NSString *content = [obj content];
 	NSRange range = NSMakeRange(0, content.length);
-	NSError *error;
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:searchField.stringValue
-																		   options:(NSRegularExpressionCaseInsensitive|NSRegularExpressionDotMatchesLineSeparators)
-																			 error:&error];
-    if (regex == nil) {
-		// display all if with regex is error
-        NSLog(@"%s, error:%@", __PRETTY_FUNCTION__, error);
-        return YES;
+    
+    if (SearchPatternsDic == nil) {
+        SearchPatternsDic = [NSMutableDictionary dictionary];
     }
-	
+    
+    NSError *error;
+    NSRegularExpression *regex = SearchPatternsDic[hash(self)];
+    if (regex == nil || ![regex.pattern isEqualToString:searchField.stringValue]) {
+        regex = [NSRegularExpression regularExpressionWithPattern:searchField.stringValue
+                                                  options:(NSRegularExpressionCaseInsensitive|NSRegularExpressionDotMatchesLineSeparators)
+                                                    error:&error];
+        if (regex == nil) {
+            // display all if with regex is error
+            MCLogger(@"error:%@", error);
+            return YES;
+        }
+        SearchPatternsDic[hash(self)] = regex;
+    }
+    
+    
     NSArray *matches = [regex matchesInString:content options:0 range:range];	
 	if ([matches count] > 0
         || [[obj valueForKey:@"input"] boolValue]
@@ -255,7 +380,7 @@ static IMP OriginalClearTextIMP = nil;
 - (void)_clearText
 {
 	OriginalClearTextIMP(self, _cmd);
-	[originConsoleItemsMap removeObjectForKey:hash(self)];
+	[OriginConsoleItemsMap removeObjectForKey:hash(self)];
 }
 @end
 
@@ -549,7 +674,7 @@ static const void *kTimerKey;
     hookIDEConsoleArea();
     hookIDEConsoleItem();
     
-    originConsoleItemsMap = [NSMutableDictionary dictionary];
+    OriginConsoleItemsMap = [NSMutableDictionary dictionary];
     setenv(MCLOG_FLAG, "YES", 0);
 }
 
@@ -666,8 +791,6 @@ static const void *kTimerKey;
     [searchField.cell setPlaceholderString:@"Regular Expression"];
     [scopeBarView addSubview:searchField];
     
-    SearchField = searchField;
-    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(searchFieldDidEndEditing:) name:NSControlTextDidEndEditingNotification object:nil];
     
     return YES;
@@ -706,26 +829,12 @@ static const void *kTimerKey;
         [consoleTextView performSelector:@selector(clearConsoleItems) withObject:nil];
     }
     
-    NSMutableDictionary *originConsoleItems = [originConsoleItemsMap objectForKey:hash(consoleArea)];
-    NSArray *sortedItems = [[originConsoleItems allValues] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-        NSTimeInterval a = [obj1 timestamp];
-        NSTimeInterval b = [obj2 timestamp];
-        if (a > b) {
-            return NSOrderedDescending;
-        }
-        
-        if(a < b) {
-            return NSOrderedAscending;
-        }
-        
-        return NSOrderedSame;
-    }];
-    
-    
+    NSArray *sortedItems = [OriginConsoleItemsMap[hash(consoleArea)] orderedItems];
     
     if ([consoleArea respondsToSelector:@selector(_appendItems:)]) {
         [consoleArea performSelector:@selector(_appendItems:) withObject:sortedItems];
     }
+    [SearchPatternsDic removeObjectForKey:hash(consoleArea)];
 #pragma clang diagnostic pop
 }
 
@@ -855,3 +964,4 @@ NSArray *backtraceStack()
     
     return backtrace;
 }
+
