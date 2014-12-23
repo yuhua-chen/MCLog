@@ -235,7 +235,7 @@ static const void *LogLevelAssociateKey;
         if (extraErrorPatterns == nil) {
             extraErrorPatterns = [NSMutableArray array];
             for (NSString *patternStr in @[
-                                           @"^\\s*\\*\\*\\* Terminating app due to uncaught exception '.+', reason: '.+'",
+                                           @"^\\s*\\*\\*\\* Terminating app due to uncaught exception '.+', reason: '[\\s\\S]+'\\n*\\*\\*\\* First throw call stack:\\s*\\n",
                                            @"^\\s*(\\+|-)\\[[a-zA-Z_]\\w*\\s[a-zA-Z_]\\w*[(:([a-zA-Z_]\\w*)?)]*\\]: unrecognized selector sent to (class|instance) [\\dxXa-fA-F]+",
                                            @"^\\s*\\*\\*\\* Assertion failure in (\\+|-)\\[[a-zA-Z_]\\w*\\s[a-zA-Z_]\\w*[(:([a-zA-Z_]\\w*)?)]*\\],",
                                            @"^\\s*\\*\\*\\* Terminating app due to uncaught exception of class '[a-zA-Z_]\\w+'"
