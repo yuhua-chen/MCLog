@@ -29,6 +29,10 @@ If you encounter any issues you can uninstall it by removing the `~/Library/Appl
 
 MCLog is under MIT.  See the LICENSE file for more info.
 
+## Thanks
+
+Thanks to [@alexlee002](https://github.com/alexlee002) for code contributions and many features.
+
 ## Contact
 
 Any suggestions or improvements are welcome. Feel free to contact me at [@yuhua_twit](https://twitter.com/yuhua_twit).
