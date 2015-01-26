@@ -428,12 +428,23 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
     MCAttributeStyleValueNegative
 };
 
-@interface MCAttributeStyle : NSObject
+@interface MCAttributeValues : NSObject
 @property(nonatomic) MCAttributeStyleValue brightColorStyle;
 @property(nonatomic) MCAttributeStyleValue imageNegative;
+@property(nonatomic) NSUInteger textColorIndex;
+@property(nonatomic) NSUInteger bgColorIndex;
 @end
 
-@implementation MCAttributeStyle
+@implementation MCAttributeValues
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _textColorIndex = NSNotFound;
+        _bgColorIndex = NSNotFound;
+    }
+    return self;
+}
 
 @end
 
@@ -453,7 +464,14 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
 
 - (void)setImageNegative:(BOOL)negative;
 - (BOOL)isImageNegative;
+
+- (void)setTextColorCode:(NSUInteger)code;
+- (void)setBgColorCode:(NSUInteger)code;
+- (NSUInteger)textColorCode;
+- (NSUInteger)bgColorCode;
+
 - (void)resetAttribute;
+
 - (NSDictionary *)systemAttributesWithRange:(NSRange)range fromAttributes:(NSArray *)effectiveAttributes;
 
 @end
@@ -491,14 +509,15 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
     if (self.lastAttribute.count > 0) {
         [attrs setValuesForKeysWithDictionary:self.lastAttribute];
     }
-    
+
     [escCharPattern() enumerateMatchesInString:self.string
                                        options:0
                                          range:range
                                     usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
                                         if (attrs.count > 0) {
-                                            NSRange attrRange = NSMakeRange(lastRange.location + lastRange.length,
-                                                                            result.range.location - lastRange.location - lastRange.length);
+                                            NSRange attrRange = NSMakeRange(
+                                                lastRange.location + lastRange.length,
+                                                result.range.location - lastRange.location - lastRange.length);
                                             [self addAttributes:attrs range:attrRange];
                                         }
 
@@ -538,17 +557,20 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
     return objc_getAssociatedObject(self, &kLastAttributeKey);
 }
 
-- (void)enableBrightColorStyle:(BOOL)enable {
-    MCAttributeStyle *obj = objc_getAssociatedObject(self, &kAttributeStyleKey);
-    if (obj == nil) {
-        obj = [[MCAttributeStyle alloc] init];
+#define fetchAttributeValuesObject()                                                                 \
+    MCAttributeValues *obj = objc_getAssociatedObject(self, &kAttributeStyleKey);                    \
+    if (obj == nil) {                                                                                \
+        obj = [[MCAttributeValues alloc] init];                                                      \
+        objc_setAssociatedObject(self, &kAttributeStyleKey, obj, OBJC_ASSOCIATION_RETAIN_NONATOMIC); \
     }
+
+- (void)enableBrightColorStyle:(BOOL)enable {
+    fetchAttributeValuesObject();
     obj.brightColorStyle = enable ? MCAttributeStyleValuePositive : MCAttributeStyleValueNegative;
-    objc_setAssociatedObject(self, &kAttributeStyleKey, obj, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (BOOL)isEnableBrightColorStyle {
-    MCAttributeStyle *obj = objc_getAssociatedObject(self, &kAttributeStyleKey);
+    MCAttributeValues *obj = objc_getAssociatedObject(self, &kAttributeStyleKey);
     if (obj.brightColorStyle == MCAttributeStyleValueNotSet) {
         return kUseBrightColorStyleAsDefault;
     }
@@ -556,17 +578,33 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
 }
 
 - (void)setImageNegative:(BOOL)negative {
-    MCAttributeStyle *obj = objc_getAssociatedObject(self, &kAttributeStyleKey);
-    if (obj == nil) {
-        obj = [[MCAttributeStyle alloc] init];
-    }
+    fetchAttributeValuesObject();
     obj.imageNegative = negative ? MCAttributeStyleValueNegative : MCAttributeStyleValuePositive;
-    objc_setAssociatedObject(self, &kAttributeStyleKey, obj, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (BOOL)isImageNegative {
-    MCAttributeStyle *obj = objc_getAssociatedObject(self, &kAttributeStyleKey);
+    MCAttributeValues *obj = objc_getAssociatedObject(self, &kAttributeStyleKey);
     return obj.imageNegative == MCAttributeStyleValueNegative;
+}
+
+- (void)setTextColorCode:(NSUInteger)code {
+    fetchAttributeValuesObject();
+    obj.textColorIndex = code;
+}
+
+- (void)setBgColorCode:(NSUInteger)code {
+    fetchAttributeValuesObject();
+    obj.bgColorIndex = code;
+}
+
+- (NSUInteger)textColorCode {
+    MCAttributeValues *obj = objc_getAssociatedObject(self, &kAttributeStyleKey);
+    return obj == nil ? NSNotFound : obj.textColorIndex;
+}
+
+- (NSUInteger)bgColorCode {
+    MCAttributeValues *obj = objc_getAssociatedObject(self, &kAttributeStyleKey);
+    return obj == nil ? NSNotFound : obj.bgColorIndex;
 }
 
 - (void)resetAttribute {
@@ -596,7 +634,7 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
                 self.lastAttribute = nil;
                 break;
 
-            case 1:   // bold
+            case 1:  // bold
             {
                 NSFont *font = attrs[NSFontAttributeName];
                 font = font ? font : systemAttributes[NSFontAttributeName];
@@ -604,7 +642,7 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
                 font = convertFontStyle(font, NSBoldFontMask);
                 attrs[NSFontAttributeName] = font;
             } break;
-                
+
             case 21:  // bold off
             {
                 NSFont *font = systemAttributes[NSFontAttributeName];
@@ -618,24 +656,25 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
             case 2:   // Faint (decreased intensity)
             case 22:  // Normal color or intensity
             {
-                MCAttributeStyle *obj = objc_getAssociatedObject(self, &kAttributeStyleKey);
-                
                 NSColor *textColor = attrs[NSForegroundColorAttributeName];
                 NSColor *bgColor = attrs[NSBackgroundColorAttributeName];
-                
-                if (attrCode == 2 && ![self isEnableBrightColorStyle]) {
-                    if ([brightColors() containsObject:textColor]) {
-                        textColor = reverseColorStyleForColor(textColor);
+
+                NSUInteger textColorCode = [self textColorCode];
+                NSUInteger bgColorCode = [self bgColorCode];
+
+                if (attrCode == 2) {
+                    if (textColorCode != NSNotFound) {
+                        textColor = colorWithCode(textColorCode, NO);
                     }
-                    if ([brightColors() containsObject:bgColor]) {
-                        bgColor = reverseColorStyleForColor(bgColor);
+                    if (bgColorCode != NSNotFound) {
+                        bgColor = colorWithCode(bgColorCode, NO);
                     }
-                } else if (attrCode == 22 && obj.brightColorStyle == MCAttributeStyleValuePositive) {
-                    if ([normalColors() containsObject:textColor]) {
-                        textColor = reverseColorStyleForColor(textColor);
+                } else if (attrCode == 22) {
+                    if (textColorCode != NSNotFound) {
+                        textColor = colorWithCode(textColorCode, kUseBrightColorStyleAsDefault);
                     }
-                    if ([normalColors() containsObject:bgColor]) {
-                        bgColor = reverseColorStyleForColor(bgColor);
+                    if (bgColorCode != NSNotFound) {
+                        bgColor = colorWithCode(bgColorCode, kUseBrightColorStyleAsDefault);
                     }
                 }
                 if (textColor) {
@@ -648,7 +687,7 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
                 [self enableBrightColorStyle:(attrCode == 2 ? NO : kUseBrightColorStyleAsDefault)];
             } break;
 
-            case 3:   // italic on
+            case 3:  // italic on
             {
                 NSFont *font = attrs[NSFontAttributeName];
                 font = font ? font : systemAttributes[NSFontAttributeName];
@@ -656,7 +695,7 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
                 font = convertFontStyle(font, NSItalicFontMask);
                 attrs[NSFontAttributeName] = font;
             } break;
-                
+
             case 23:  // Not italic
             {
                 NSFont *font = systemAttributes[NSFontAttributeName];
@@ -681,20 +720,23 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
                     break;
                 }
 
+                NSUInteger textColorCode = [self textColorCode];
+                NSUInteger bgColorCode = [self bgColorCode];
+
                 NSColor *background = attrs[NSBackgroundColorAttributeName];
                 NSColor *textColor = attrs[NSForegroundColorAttributeName];
 
                 NSColor *viewBgColor = defaultBackgroundColor();
 
-                //MCLogger(@"text color:%@\nbgcolor:%@\nview's BgColor:%@", textColor, background, viewBgColor);
-
-                textColor =
-                    textColor ? textColor : (systemAttributes[NSForegroundColorAttributeName]
-                                                 ? systemAttributes[NSForegroundColorAttributeName]
-                                                 : (viewBgColor ? colorWithContrastingColor(viewBgColor) : nil));
-                background = background ? background : (systemAttributes[NSBackgroundColorAttributeName]
-                                                            ? systemAttributes[NSBackgroundColorAttributeName]
-                                                            : (viewBgColor ? viewBgColor : nil));
+                textColor = textColorCode != NSNotFound
+                                ? colorWithCode(textColorCode, [self isEnableBrightColorStyle])
+                                : (systemAttributes[NSForegroundColorAttributeName]
+                                       ? systemAttributes[NSForegroundColorAttributeName]
+                                       : (viewBgColor) ? colorWithContrastingColor(viewBgColor) : nil);
+                background = bgColorCode != NSNotFound ? colorWithCode(bgColorCode, [self isEnableBrightColorStyle])
+                                                       : (systemAttributes[NSBackgroundColorAttributeName]
+                                                              ? systemAttributes[NSBackgroundColorAttributeName]
+                                                              : (viewBgColor ? viewBgColor : nil));
 
                 if (textColor == nil) {
                     [attrs removeObjectForKey:NSBackgroundColorAttributeName];
@@ -715,31 +757,33 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
                 if (![self isImageNegative]) {
                     break;
                 }
-                NSColor *background = attrs[NSBackgroundColorAttributeName];
-                NSColor *textcolor = attrs[NSForegroundColorAttributeName];
+                
+                NSUInteger textColorCode = [self textColorCode];
+                NSUInteger bgColorCode = [self bgColorCode];
+                
+                NSColor *background = bgColorCode == NSNotFound ? nil : colorWithCode(bgColorCode, [self isEnableBrightColorStyle]);
+                NSColor *textcolor = textColorCode == NSNotFound ? nil : colorWithCode(textColorCode, [self isEnableBrightColorStyle]);
+                
                 if (textcolor) {
-                    attrs[NSBackgroundColorAttributeName] = textcolor;
-                } else {
-                    [attrs removeObjectForKey:NSBackgroundColorAttributeName];
-                }
-                if (background) {
-                    attrs[NSForegroundColorAttributeName] = background;
+                    attrs[NSForegroundColorAttributeName] = textcolor;
                 } else {
                     [attrs removeObjectForKey:NSForegroundColorAttributeName];
+                }
+                if (background) {
+                    attrs[NSBackgroundColorAttributeName] = background;
+                } else {
+                    [attrs removeObjectForKey:NSBackgroundColorAttributeName];
                 }
 
                 [self setImageNegative:NO];
             } break;
 
             case 8:  // Conceal
-                self.lastAttribute = attrs;
                 attrs[NSForegroundColorAttributeName] = [NSColor clearColor];
                 break;
 
             case 28:  // Conceal off
-                if (self.lastAttribute[NSForegroundColorAttributeName]) {
-                    attrs[NSForegroundColorAttributeName] = self.lastAttribute[NSForegroundColorAttributeName];
-                }
+                attrs[NSForegroundColorAttributeName] = colorWithCode([self textColorCode], [self isEnableBrightColorStyle]);
                 break;
 
             // foreground color
@@ -760,10 +804,13 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
                         attrs[NSForegroundColorAttributeName] = color;
                     }
                 }
+                [self setTextColorCode:attrCode];
+
             } break;
 
             case 39:  // reset text color
                 [attrs removeObjectForKey:NSForegroundColorAttributeName];
+                [self setTextColorCode:NSNotFound];
                 break;
 
             // background color
@@ -784,10 +831,12 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
                         attrs[NSBackgroundColorAttributeName] = color;
                     }
                 }
+                [self setBgColorCode:attrCode];
             } break;
 
             case 49:  // reset background
                 [attrs removeObjectForKey:NSBackgroundColorAttributeName];
+                [self setBgColorCode:NSNotFound];
                 break;
 
             default:
@@ -1125,8 +1174,7 @@ NSRegularExpression *escCharPattern() {
     static NSRegularExpression *pattern = nil;
     if (pattern == nil) {
         NSError *error = nil;
-        pattern =
-            [NSRegularExpression regularExpressionWithPattern:(LC_ESC @"\\[([\\d;]*)m")options:0 error:&error];
+        pattern = [NSRegularExpression regularExpressionWithPattern:(LC_ESC @"\\[([\\d;]*)m")options:0 error:&error];
         if (!pattern) {
             MCLogger(@"%@", error);
         }
@@ -1209,15 +1257,14 @@ NSArray *normalColors() {
 }
 
 NSColor *colorWithCode(NSInteger colorCode, BOOL useBrightStyle) {
+    if (colorCode < 30 || colorCode >= 50) {
+        return nil;
+    }
     NSArray *brightColorArray = brightColors();
     NSArray *normalColorArray = normalColors();
     NSUInteger colorIndex = colorCode % 10;
     NSColor *color = useBrightStyle ? (colorIndex < brightColorArray.count ? brightColorArray[colorIndex] : nil)
                                     : (colorIndex < normalColorArray.count ? normalColorArray[colorIndex] : nil);
-
-    if (color == nil) {
-        MCLogger(@"ERROR: %@ out of index:%tu", color, index);
-    }
     return color;
 }
 
