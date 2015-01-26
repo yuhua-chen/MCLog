@@ -4,16 +4,18 @@ This plugin let you feel easy to trace console log. Although you may search the 
 
 ![screen-shot](https://rawgithub.com/yuhua-chen/MCLog/master/MCLogScreenshot.gif)
 
+![screen-shot](https://raw.githubusercontent.com/alexlee002/MCLog/master/MCLog-colorful-logs.png =532x159)
 
+ 
 ## Compatibility
 
  - Support Xcode 5 above.
  
-## Features
- 
+## Features 
  - Filter console log with regular expression.
  - Support multi-tabs.
- - Support colorful log output.   
+ - Support colorful log output
+ - Support different log levels 
 
 ## Usage
 
@@ -24,6 +26,32 @@ or
  3. Restart Xcode  
 
 If you encounter any issues you can uninstall it by removing the `~/Library/Application Support/Developer/Shared/Xcode/Plug-ins/MCLog.xcplugin`.
+
+## Enable colorful console output
+
+example:
+
+- define log macros:
+
+```
+#define __ALLog(LEVEL, fmt, ...) \
+    NSLog((@"-\e[7m" LEVEL @"\e[27;2;3;4m %s (%@:%d)\e[22;23;24m] " fmt ), __PRETTY_FUNCTION__, [[NSString stringWithUTF8String:__FILE__] lastPathComponent], __LINE__, ##__VA_ARGS__)
+
+#define ALLogV(fmt, ...) __ALLog(@"[VERBOSE]", fmt, ##__VA_ARGS__)
+#define ALLogI(fmt, ...) __ALLog(@"[INFO]", fmt, ##__VA_ARGS__)
+#define ALLogW(fmt, ...) __ALLog(@"[WARN]", fmt, ##__VA_ARGS__)
+#define ALLogE(fmt, ...) __ALLog(@"[ERROR]", fmt, ##__VA_ARGS__)
+```
+
+- use macros in your code:
+
+```
+    ALLogV(@"Sent when the application is about to move from active to inactive state. This can occur for certain types of");
+    ALLogI(@"temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application");
+    ALLogW(@"If your application supports background execution, this method is called instead of applicationWillTerminate:");
+    ALLogE(@"Called as part of the transition from the background to the inactive state; here you can undo many of the changes");
+```
+
 
 ## License
 
