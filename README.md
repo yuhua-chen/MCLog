@@ -33,7 +33,7 @@ example:
 
 - define log macros:
 
-```
+``` objc
 #define __ALLog(LEVEL, fmt, ...) \
     NSLog((@"-\e[7m" LEVEL @"\e[27;2;3;4m %s (%@:%d)\e[22;23;24m] " fmt ), __PRETTY_FUNCTION__, [[NSString stringWithUTF8String:__FILE__] lastPathComponent], __LINE__, ##__VA_ARGS__)
 
@@ -45,7 +45,7 @@ example:
 
 - use macros in your code:
 
-```
+``` objc
     ALLogV(@"Sent when the application is about to move from active to inactive state. This can occur for certain types of");
     ALLogI(@"temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application");
     ALLogW(@"If your application supports background execution, this method is called instead of applicationWillTerminate:");
