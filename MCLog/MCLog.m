@@ -75,6 +75,8 @@ void hookIDEConsoleItem();
 NSRegularExpression *logItemPrefixPattern();
 NSRegularExpression *escCharPattern();
 
+NSArray *normalColors();
+NSArray *brightColors();
 NSColor *colorWithCode(NSInteger colorCode, BOOL useBrightStyle);
 NSColor *reverseColorStyleForColor(NSColor *color);
 
@@ -617,19 +619,33 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
             case 22:  // Normal color or intensity
             {
                 MCAttributeStyle *obj = objc_getAssociatedObject(self, &kAttributeStyleKey);
-
-                [self enableBrightColorStyle:(attrCode == 2 ? NO : kUseBrightColorStyleAsDefault)];
-
-                if (attrCode == 2 || (obj.brightColorStyle == MCAttributeStyleValuePositive && attrCode == 22)) {
-                    if (attrs[NSForegroundColorAttributeName]) {
-                        attrs[NSForegroundColorAttributeName] =
-                            reverseColorStyleForColor(attrs[NSForegroundColorAttributeName]);
+                
+                NSColor *textColor = attrs[NSForegroundColorAttributeName];
+                NSColor *bgColor = attrs[NSBackgroundColorAttributeName];
+                
+                if (attrCode == 2 && ![self isEnableBrightColorStyle]) {
+                    if ([brightColors() containsObject:textColor]) {
+                        textColor = reverseColorStyleForColor(textColor);
                     }
-                    if (attrs[NSBackgroundColorAttributeName]) {
-                        attrs[NSBackgroundColorAttributeName] =
-                            reverseColorStyleForColor(attrs[NSBackgroundColorAttributeName]);
+                    if ([brightColors() containsObject:bgColor]) {
+                        bgColor = reverseColorStyleForColor(bgColor);
+                    }
+                } else if (attrCode == 22 && obj.brightColorStyle == MCAttributeStyleValuePositive) {
+                    if ([normalColors() containsObject:textColor]) {
+                        textColor = reverseColorStyleForColor(textColor);
+                    }
+                    if ([normalColors() containsObject:bgColor]) {
+                        bgColor = reverseColorStyleForColor(bgColor);
                     }
                 }
+                if (textColor) {
+                    attrs[NSForegroundColorAttributeName] = textColor;
+                }
+                if (bgColor) {
+                    attrs[NSBackgroundColorAttributeName] = bgColor;
+                }
+
+                [self enableBrightColorStyle:(attrCode == 2 ? NO : kUseBrightColorStyleAsDefault)];
             } break;
 
             case 3:   // italic on
@@ -639,7 +655,6 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
                 font = font ? font : [NSFont systemFontOfSize:11.f];
                 font = convertFontStyle(font, NSItalicFontMask);
                 attrs[NSFontAttributeName] = font;
-                MCLogger(@"font:%@; %@", font.fontName, font);
             } break;
                 
             case 23:  // Not italic
@@ -671,7 +686,7 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
 
                 NSColor *viewBgColor = defaultBackgroundColor();
 
-                // MCLogger(@"text color:%@\nbgcolor:%@\nview's BgColor:%@", textColor, background, viewBgColor);
+                //MCLogger(@"text color:%@\nbgcolor:%@\nview's BgColor:%@", textColor, background, viewBgColor);
 
                 textColor =
                     textColor ? textColor : (systemAttributes[NSForegroundColorAttributeName]
@@ -701,8 +716,9 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
                     break;
                 }
                 NSColor *background = attrs[NSBackgroundColorAttributeName];
-                if (attrs[NSForegroundColorAttributeName]) {
-                    attrs[NSBackgroundColorAttributeName] = attrs[NSForegroundColorAttributeName];
+                NSColor *textcolor = attrs[NSForegroundColorAttributeName];
+                if (textcolor) {
+                    attrs[NSBackgroundColorAttributeName] = textcolor;
                 } else {
                     [attrs removeObjectForKey:NSBackgroundColorAttributeName];
                 }
@@ -1199,6 +1215,9 @@ NSColor *colorWithCode(NSInteger colorCode, BOOL useBrightStyle) {
     NSColor *color = useBrightStyle ? (colorIndex < brightColorArray.count ? brightColorArray[colorIndex] : nil)
                                     : (colorIndex < normalColorArray.count ? normalColorArray[colorIndex] : nil);
 
+    if (color == nil) {
+        MCLogger(@"ERROR: %@ out of index:%tu", color, index);
+    }
     return color;
 }
 
@@ -1211,6 +1230,7 @@ NSColor *reverseColorStyleForColor(NSColor *color) {
     if (index != NSNotFound) {
         return brightColors()[index];
     }
+    MCLogger(@"ERROR: %@ out of index:%tu", color, index);
     return nil;
 }
 
