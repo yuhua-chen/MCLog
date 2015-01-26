@@ -10,10 +10,10 @@ This plugin let you feel easy to trace console log. Although you may search the 
  - Support Xcode 5 above.
  
 ## Features
-
+ 
  - Filter console log with regular expression.
  - Support multi-tabs.
- - Support colorful log output.
+ - Support colorful log output.   
 
 ## Usage
 
