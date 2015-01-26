@@ -4,7 +4,7 @@ This plugin let you feel easy to trace console log. Although you may search the 
 
 ![screen-shot](https://rawgithub.com/yuhua-chen/MCLog/master/MCLogScreenshot.gif)
 
-![screen-shot](https://raw.githubusercontent.com/alexlee002/MCLog/master/MCLog-colorful-logs.png =532x159)
+![screen-shot](https://raw.githubusercontent.com/alexlee002/MCLog/master/MCLog-colorful-logs.png)
 
  
 ## Compatibility
