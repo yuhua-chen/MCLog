@@ -36,6 +36,8 @@ static UInt32 kNormalWhite  = 0xBFBFBF;
 
 static BOOL kUseBrightColorStyleAsDefault = YES;
 
+static CFTimeInterval kWaitForNextLogItemTime = 0.25;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define MCLOG_FLAG "MCLOG_FLAG"
 #define kTagSearchField 99
@@ -60,6 +62,8 @@ typedef NS_ENUM(NSUInteger, MCLogLevel) {
 
 @class MCLogIDEConsoleArea;
 
+static dispatch_queue_t kBufferQueue;
+
 static NSMutableDictionary *OriginConsoleItemsMap = nil;
 // static NSSearchField       *SearchField           = nil;
 static NSMutableDictionary *SearchPatternsDic = nil;
@@ -75,6 +79,8 @@ void hookIDEConsoleItem();
 NSRegularExpression *logItemPrefixPattern();
 NSRegularExpression *escCharPattern();
 
+NSString *trimAllANSIControlCharsForText(NSString *text);
+
 NSArray *normalColors();
 NSArray *brightColors();
 NSColor *colorWithCode(NSInteger colorCode, BOOL useBrightStyle);
@@ -88,6 +94,28 @@ NSView *getParantViewByClassNameFromView(NSString *className, NSView *view);
 NSColor *defaultBackgroundColor();
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+@interface NSNull (NullExtension)
+- (NSString *)stringValue;
+- (NSInteger)integerValue;
+- (BOOL)boolValue;
+@end
+
+@implementation NSNull (NullExtension)
+
+- (NSString *)stringValue {
+    return nil;
+}
+- (NSInteger)integerValue {
+    return 0;
+}
+- (BOOL)boolValue {
+    return NO;
+}
+
+@end
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 @interface MCOrderedMap : NSObject
 @property(nonatomic, strong) NSMutableOrderedSet *keys;
 @property(nonatomic, strong) NSMutableArray *items;
@@ -239,19 +267,8 @@ static const void *LogLevelAssociateKey;
         return;
     }
 
-    static NSRegularExpression *ControlCharsPattern = nil;
-    if (ControlCharsPattern == nil) {
-        ControlCharsPattern =
-            [NSRegularExpression regularExpressionWithPattern:LC_ESC @"\\[[\\d;]+m" options:0 error:&error];
-        if (!ControlCharsPattern) {
-            MCLogger(@"%@", error);
-        }
-    }
     NSString *content = [logText substringFromIndex:prefixRange.length];
-    NSString *originalContent = [ControlCharsPattern stringByReplacingMatchesInString:content
-                                                                              options:0
-                                                                                range:NSMakeRange(0, content.length)
-                                                                         withTemplate:@""];
+    NSString *originalContent = trimAllANSIControlCharsForText(content);
 
     if ([originalContent hasPrefix:@"-[VERBOSE]"]) {
         [item setLogLevel:MCLogLevelVerbose];
@@ -310,7 +327,9 @@ static IMP IDEConsoleItemInitIMP = nil;
 
 - (id)initWithAdaptorType:(id)arg1 content:(id)arg2 kind:(int)arg3 {
     id item = IDEConsoleItemInitIMP(self, _cmd, arg1, arg2, arg3);
-    [self updateItemAttribute:item];
+    @autoreleasepool {
+        [self updateItemAttribute:item];
+    }
     // MCLogger(@"%@, logLevel:%zd, adaptorType:%@", item, [item logLevel], [item valueForKey:@"adaptorType"]);
     return item;
 }
@@ -334,15 +353,23 @@ static IMP OriginalClearTextIMP = nil;
     if (!searchField.consoleArea) {
         searchField.consoleArea = self;
     }
-
-    MCOrderedMap *originConsoleItems = OriginConsoleItemsMap[hash(self)];
+    NSString *selfKey = hash(self);
+    MCOrderedMap *originConsoleItems = OriginConsoleItemsMap[selfKey];
     if (!originConsoleItems) {
         originConsoleItems = [[MCOrderedMap alloc] init];
     }
+    // store all console items.
+    NSString *timestampKey = [[obj valueForKey:@"timestamp"] stringValue];
+    if (![originConsoleItems containsObjectForKey:timestampKey]) {
+        [originConsoleItems addObject:obj forKey:timestampKey];
+    }
+    [OriginConsoleItemsMap setObject:originConsoleItems forKey:selfKey];
 
+    ///// step 1, filter by log level
     NSInteger filterMode = [[self valueForKey:@"filterMode"] intValue];
     BOOL shouldShowLogLevel = YES;
-    if (filterMode >= MCLogLevelVerbose) {
+    if ([@[ @(MCLogLevelVerbose), @(MCLogLevelInfo), @(MCLogLevelWarn), @(MCLogLevelError) ]
+            containsObject:@(filterMode)]) {
         shouldShowLogLevel = [obj logLevel] >= filterMode || [[obj valueForKey:@"input"] boolValue] ||
                              [[obj valueForKey:@"prompt"] boolValue] ||
                              [[obj valueForKey:@"outputRequestedByUser"] boolValue] ||
@@ -352,40 +379,26 @@ static IMP OriginalClearTextIMP = nil;
     }
 
     if (!shouldShowLogLevel) {
-        if (searchField) {
-            // store all console items.
-            if (![originConsoleItems containsObjectForKey:@([obj timestamp])]) {
-                [originConsoleItems addObject:obj forKey:@([obj timestamp])];
-            }
-            [OriginConsoleItemsMap setObject:originConsoleItems forKey:hash(self)];
-        }
         return NO;
     }
 
-    if (!searchField) {
-        return YES;
-    }
-
-    // store all console items.
-    if (![originConsoleItems containsObjectForKey:@([obj timestamp])]) {
-        [originConsoleItems addObject:obj forKey:@([obj timestamp])];
-    }
-    [OriginConsoleItemsMap setObject:originConsoleItems forKey:hash(self)];
-
+    ///// step 2, filter by search pattern
     if (searchField.stringValue.length == 0) {
         return YES;
     }
 
-    // test with the regular expression
-    NSString *content = [obj content];
-    NSRange range = NSMakeRange(0, content.length);
+    if ([[obj valueForKey:@"input"] boolValue] || [[obj valueForKey:@"prompt"] boolValue] ||
+        [[obj valueForKey:@"outputRequestedByUser"] boolValue] ||
+        [[obj valueForKey:@"adaptorType"] hasSuffix:@".Debugger"]) {
+        return YES;
+    }
 
     if (SearchPatternsDic == nil) {
         SearchPatternsDic = [NSMutableDictionary dictionary];
     }
 
     NSError *error;
-    NSRegularExpression *regex = SearchPatternsDic[hash(self)];
+    NSRegularExpression *regex = SearchPatternsDic[selfKey];
     if (regex == nil || ![regex.pattern isEqualToString:searchField.stringValue]) {
         regex = [NSRegularExpression regularExpressionWithPattern:searchField.stringValue
                                                           options:(NSRegularExpressionCaseInsensitive |
@@ -396,13 +409,15 @@ static IMP OriginalClearTextIMP = nil;
             MCLogger(@"error:%@", error);
             return YES;
         }
-        SearchPatternsDic[hash(self)] = regex;
+        SearchPatternsDic[selfKey] = regex;
     }
 
+    // test with the regular expression
+    NSString *content = [obj valueForKey:@"content"];
+    content = trimAllANSIControlCharsForText(content);
+    NSRange range = NSMakeRange(0, content.length);
     NSArray *matches = [regex matchesInString:content options:0 range:range];
-    if ([matches count] > 0 || [[obj valueForKey:@"input"] boolValue] || [[obj valueForKey:@"prompt"] boolValue] ||
-        [[obj valueForKey:@"outputRequestedByUser"] boolValue] ||
-        [[obj valueForKey:@"adaptorType"] hasSuffix:@".Debugger"]) {
+    if ([matches count] > 0) {
         return YES;
     }
 
@@ -448,10 +463,6 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
 
 @end
 
-@interface MCDVTTextStorage : NSTextStorage
-- (void)fixAttributesInRange:(NSRange)range;
-@end
-
 @interface NSObject (DVTTextStorage)
 - (void)setLastAttribute:(NSDictionary *)attribute;
 - (NSDictionary *)lastAttribute;
@@ -473,77 +484,6 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
 - (void)resetAttribute;
 
 - (NSDictionary *)systemAttributesWithRange:(NSRange)range fromAttributes:(NSArray *)effectiveAttributes;
-
-@end
-
-@implementation MCDVTTextStorage
-
-- (void)fixAttributesInRange:(NSRange)range {
-    OriginalFixAttributesInRangeIMP(self, _cmd, range);
-
-    if (range.location == NSNotFound || range.length == 0) {
-        return;
-    }
-
-    if (self.lastAttribute == nil &&
-        [[self.string substringWithRange:range] rangeOfString:LC_ESC].location == NSNotFound) {
-        return;
-    }
-
-    NSMutableArray *systemAttributes = [NSMutableArray array];
-    NSRange tmp = (NSRange){range.location, 0};
-    while (tmp.location + tmp.length < range.location + range.length) {
-        NSDictionary *sysAttr =
-            [self attributesAtIndex:(tmp.location + tmp.length)longestEffectiveRange:&tmp inRange:range];
-        if (tmp.location == NSNotFound) {
-            break;
-        }
-        NSMutableDictionary *rangeAttr = [NSMutableDictionary dictionary];
-        rangeAttr[@"Range"] = [NSValue valueWithRange:tmp];
-        rangeAttr[@"Attributes"] = sysAttr;
-        [systemAttributes addObject:rangeAttr];
-    }
-
-    __block NSRange lastRange = NSMakeRange(range.location, 0);
-    NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
-    if (self.lastAttribute.count > 0) {
-        [attrs setValuesForKeysWithDictionary:self.lastAttribute];
-    }
-
-    [escCharPattern() enumerateMatchesInString:self.string
-                                       options:0
-                                         range:range
-                                    usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
-                                        if (attrs.count > 0) {
-                                            NSRange attrRange = NSMakeRange(
-                                                lastRange.location + lastRange.length,
-                                                result.range.location - lastRange.location - lastRange.length);
-                                            [self addAttributes:attrs range:attrRange];
-                                        }
-
-                                        NSString *attrsDesc = [self.string substringWithRange:[result rangeAtIndex:1]];
-                                        if (attrsDesc.length == 0) {
-                                            [self addAttributes:@{
-                                                NSFontAttributeName : [NSFont systemFontOfSize:0.000001f],
-                                                NSForegroundColorAttributeName : [NSColor clearColor]
-                                            } range:result.range];
-                                            lastRange = result.range;
-                                            return;
-                                        }
-                                        NSRange nextRange = NSMakeRange(result.range.location + result.range.length, 0);
-                                        nextRange.length = range.location - nextRange.location;
-                                        [self updateAttributes:attrs
-                                             withANSIESCString:attrsDesc
-                                              systemAttributes:[self systemAttributesWithRange:nextRange
-                                                                                fromAttributes:systemAttributes]];
-                                        [self addAttributes:@{
-                                            NSFontAttributeName : [NSFont systemFontOfSize:0.000001f],
-                                            NSForegroundColorAttributeName : [NSColor clearColor]
-                                        } range:result.range];
-                                        lastRange = result.range;
-                                        self.lastAttribute = attrs;
-                                    }];
-}
 
 @end
 
@@ -757,13 +697,15 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
                 if (![self isImageNegative]) {
                     break;
                 }
-                
+
                 NSUInteger textColorCode = [self textColorCode];
                 NSUInteger bgColorCode = [self bgColorCode];
-                
-                NSColor *background = bgColorCode == NSNotFound ? nil : colorWithCode(bgColorCode, [self isEnableBrightColorStyle]);
-                NSColor *textcolor = textColorCode == NSNotFound ? nil : colorWithCode(textColorCode, [self isEnableBrightColorStyle]);
-                
+
+                NSColor *background =
+                    bgColorCode == NSNotFound ? nil : colorWithCode(bgColorCode, [self isEnableBrightColorStyle]);
+                NSColor *textcolor =
+                    textColorCode == NSNotFound ? nil : colorWithCode(textColorCode, [self isEnableBrightColorStyle]);
+
                 if (textcolor) {
                     attrs[NSForegroundColorAttributeName] = textcolor;
                 } else {
@@ -783,7 +725,8 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
                 break;
 
             case 28:  // Conceal off
-                attrs[NSForegroundColorAttributeName] = colorWithCode([self textColorCode], [self isEnableBrightColorStyle]);
+                attrs[NSForegroundColorAttributeName] =
+                    colorWithCode([self textColorCode], [self isEnableBrightColorStyle]);
                 break;
 
             // foreground color
@@ -847,52 +790,126 @@ typedef NS_ENUM(NSUInteger, MCAttributeStyleValue) {
 
 @end
 
+@interface MCDVTTextStorage : NSTextStorage
+- (void)fixAttributesInRange:(NSRange)range;
+@end
+
+@implementation MCDVTTextStorage
+
+- (void)fixAttributesInRange:(NSRange)range {
+    OriginalFixAttributesInRangeIMP(self, _cmd, range);
+
+    if (range.location == NSNotFound || range.length == 0) {
+        return;
+    }
+
+    if (self.lastAttribute == nil &&
+        [[self.string substringWithRange:range] rangeOfString:LC_ESC].location == NSNotFound) {
+        return;
+    }
+
+    @autoreleasepool {
+        NSMutableArray *systemAttributes = [NSMutableArray array];
+        NSRange tmp = (NSRange){range.location, 0};
+        while (tmp.location + tmp.length < range.location + range.length) {
+            NSDictionary *sysAttr =
+                [self attributesAtIndex:(tmp.location + tmp.length)longestEffectiveRange:&tmp inRange:range];
+            if (tmp.location == NSNotFound) {
+                break;
+            }
+            NSMutableDictionary *rangeAttr = [NSMutableDictionary dictionary];
+            rangeAttr[@"Range"] = [NSValue valueWithRange:tmp];
+            rangeAttr[@"Attributes"] = sysAttr;
+            [systemAttributes addObject:rangeAttr];
+        }
+
+        NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
+        if (self.lastAttribute.count > 0) {
+            [attrs setValuesForKeysWithDictionary:self.lastAttribute];
+        }
+
+        __block NSRange lastRange = NSMakeRange(range.location, 0);
+        [escCharPattern() enumerateMatchesInString:self.string
+                                           options:0
+                                             range:range
+                                        usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
+                                            if (attrs.count > 0) {
+                                                NSRange attrRange = NSMakeRange(
+                                                    lastRange.location + lastRange.length,
+                                                    result.range.location - lastRange.location - lastRange.length);
+                                                [self addAttributes:attrs range:attrRange];
+                                            }
+
+                                            NSString *attrsDesc =
+                                                [self.string substringWithRange:[result rangeAtIndex:1]];
+                                            if (attrsDesc.length == 0) {
+                                                [self addAttributes:@{
+                                                    NSFontAttributeName : [NSFont systemFontOfSize:0.000001f],
+                                                    NSForegroundColorAttributeName : [NSColor clearColor]
+                                                } range:result.range];
+                                                lastRange = result.range;
+                                                return;
+                                            }
+                                            NSRange nextRange =
+                                                NSMakeRange(result.range.location + result.range.length, 0);
+                                            nextRange.length = range.location - nextRange.location;
+                                            [self updateAttributes:attrs
+                                                 withANSIESCString:attrsDesc
+                                                  systemAttributes:[self systemAttributesWithRange:nextRange
+                                                                                    fromAttributes:systemAttributes]];
+                                            [self addAttributes:@{
+                                                NSFontAttributeName : [NSFont systemFontOfSize:0.000001f],
+                                                NSForegroundColorAttributeName : [NSColor clearColor]
+                                            } range:result.range];
+                                            lastRange = result.range;
+                                            self.lastAttribute = attrs;
+                                        }];
+    }
+}
+
+@end
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #pragma mark - MCIDEConsoleAdaptor
-static IMP originalOutputForStandardOutputIMP = nil;
+static IMP OriginalOutputForStandardOutputIMP = nil;
 
 @interface MCIDEConsoleAdaptor : NSObject
 - (void)outputForStandardOutput:(id)arg1 isPrompt:(BOOL)arg2 isOutputRequestedByUser:(BOOL)arg3;
 @end
 
-static const void *kUnProcessedOutputKey;
-static const void *kTimerKey;
+static const char kUnProcessedOutputKey;
 
 @interface NSObject (MCIDEConsoleAdaptor)
-- (void)setUnprocessedOutput:(NSString *)output;
-- (NSString *)unprocessedOutput;
+- (void)setUnprocessedOutputInfo:(NSDictionary *)outputInfo;
+- (NSDictionary *)unprocessedOutputInfo;
 
-- (void)setTimer:(NSTimer *)timer;
-- (NSTimer *)timer;
+- (void)MCOutputUnprocessedBuffer;
 
-- (void)timerTimeout:(NSTimer *)timer;
 @end
+
 
 @implementation NSObject (MCIDEConsoleAdaptor)
 
-- (void)setUnprocessedOutput:(NSString *)output {
-    objc_setAssociatedObject(self, &kUnProcessedOutputKey, output, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setUnprocessedOutputInfo:(NSDictionary *)outputInfo {
+    objc_setAssociatedObject(self, &kUnProcessedOutputKey, outputInfo, OBJC_ASSOCIATION_RETAIN);
 }
 
-- (NSString *)unprocessedOutput {
+- (NSDictionary *)unprocessedOutputInfo {
     return objc_getAssociatedObject(self, &kUnProcessedOutputKey);
 }
 
-- (void)setTimer:(NSTimer *)timer {
-    objc_setAssociatedObject(self, &kTimerKey, timer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (NSTimer *)timer {
-    return objc_getAssociatedObject(self, &kTimerKey);
-}
-
-- (void)timerTimeout:(NSTimer *)timer {
-    if (self.unprocessedOutput.length > 0) {
-        NSArray *args = timer.userInfo;
-        originalOutputForStandardOutputIMP(self, _cmd, self.unprocessedOutput, [args[0] boolValue],
-                                           [args[1] boolValue]);
+- (void)MCOutputUnprocessedBuffer {
+    NSDictionary *unprocessedInfo = self.unprocessedOutputInfo;
+    if (unprocessedInfo &&
+        CFAbsoluteTimeGetCurrent() - [unprocessedInfo[@"time"] doubleValue] >= kWaitForNextLogItemTime) {
+        [self setUnprocessedOutputInfo:nil];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            OriginalOutputForStandardOutputIMP(self, _cmd, [unprocessedInfo[@"content"] stringValue],
+                                               [unprocessedInfo[@"isPrompt"] boolValue],
+                                               [unprocessedInfo[@"isOutputRequestedByUser"] boolValue]);
+        });
     }
-    self.unprocessedOutput = nil;
 }
 
 @end
@@ -900,18 +917,19 @@ static const void *kTimerKey;
 @implementation MCIDEConsoleAdaptor
 
 - (void)outputForStandardOutput:(id)arg1 isPrompt:(BOOL)arg2 isOutputRequestedByUser:(BOOL)arg3 {
-    [self.timer invalidate];
-    self.timer = nil;
+    
+    //OriginalOutputForStandardOutputIMP(self, _cmd, arg1, arg2, arg3);
 
-    NSRegularExpression *logSeperatorPattern = logItemPrefixPattern();
-
-    NSString *unprocessedstring = self.unprocessedOutput;
+    NSString *unprocessedstring = self.unprocessedOutputInfo[@"content"];
+    [self setUnprocessedOutputInfo:nil];
+    
     NSString *buffer = arg1;
-    if (unprocessedstring.length > 0) {
+    if (unprocessedstring) {
         buffer = [unprocessedstring stringByAppendingString:arg1];
-        self.unprocessedOutput = nil;
     }
-
+    unprocessedstring = nil;
+    
+    NSRegularExpression *logSeperatorPattern = logItemPrefixPattern();
     if (logSeperatorPattern) {
         NSArray *matches = [logSeperatorPattern matchesInString:buffer options:0 range:NSMakeRange(0, [buffer length])];
         if (matches.count > 0) {
@@ -921,26 +939,30 @@ static const void *kTimerKey;
                     NSString *logItemData =
                         [buffer substringWithRange:NSMakeRange(lastMatchingRange.location,
                                                                result.range.location - lastMatchingRange.location)];
-                    originalOutputForStandardOutputIMP(self, _cmd, logItemData, arg2, arg3);
+                    OriginalOutputForStandardOutputIMP(self, _cmd, logItemData, arg2, arg3);
                 }
                 lastMatchingRange = result.range;
             }
             if (lastMatchingRange.location + lastMatchingRange.length < [buffer length]) {
-                self.unprocessedOutput = [buffer substringFromIndex:lastMatchingRange.location];
+                unprocessedstring = [buffer substringFromIndex:lastMatchingRange.location];
             }
         } else {
-            originalOutputForStandardOutputIMP(self, _cmd, buffer, arg2, arg3);
+            OriginalOutputForStandardOutputIMP(self, _cmd, buffer, arg2, arg3);
         }
     } else {
-        originalOutputForStandardOutputIMP(self, _cmd, arg1, arg2, arg3);
+        OriginalOutputForStandardOutputIMP(self, _cmd, buffer, arg2, arg3);
     }
 
-    if (self.unprocessedOutput.length > 0) {
-        self.timer = [NSTimer scheduledTimerWithTimeInterval:0.5
-                                                      target:self
-                                                    selector:@selector(timerTimeout:)
-                                                    userInfo:@[ @(arg2), @(arg3) ]
-                                                     repeats:NO];
+    if (unprocessedstring.length > 0) {
+        [self setUnprocessedOutputInfo:@{
+            @"content" : unprocessedstring,
+            @"isPrompt:" : @(arg2),
+            @"isOutputRequestedByUser" : @(arg3),
+            @"time" : @(CFAbsoluteTimeGetCurrent())
+        }];
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kWaitForNextLogItemTime * NSEC_PER_SEC)),
+                       kBufferQueue, ^{ [self MCOutputUnprocessedBuffer]; });
     }
 }
 
@@ -1100,6 +1122,9 @@ static const void *kTimerKey;
 
 - (void)activate:(NSNotification *)notification {
     [self addCustomViews];
+    if (!kBufferQueue) {
+        kBufferQueue = dispatch_queue_create("MCLogBufferQueue", DISPATCH_QUEUE_SERIAL);
+    }
 }
 
 @end
@@ -1146,7 +1171,7 @@ void hookIDEConsoleAdaptor() {
     Class IDEConsoleAdaptor = NSClassFromString(@"IDEConsoleAdaptor");
     Method outputForStandardOutput = class_getInstanceMethod(
         IDEConsoleAdaptor, @selector(outputForStandardOutput:isPrompt:isOutputRequestedByUser:));
-    originalOutputForStandardOutputIMP = method_getImplementation(outputForStandardOutput);
+    OriginalOutputForStandardOutputIMP = method_getImplementation(outputForStandardOutput);
     IMP newOutputForStandardOutputIMP = class_getMethodImplementation(
         [MCIDEConsoleAdaptor class], @selector(outputForStandardOutput:isPrompt:isOutputRequestedByUser:));
     method_setImplementation(outputForStandardOutput, newOutputForStandardOutputIMP);
@@ -1160,7 +1185,7 @@ NSRegularExpression *logItemPrefixPattern() {
         NSError *error = nil;
         pattern = [NSRegularExpression
             regularExpressionWithPattern:
-                @"\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}[\\.:]\\d{3}\\s+.+\\[[\\da-fA-F]+:[\\da-fA-F]+\\]\\s+"
+                @"\\n?\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}[\\.:]\\d{3}\\s+.+\\[[\\da-fA-F]+:[\\da-fA-F]+\\]\\s+"
                                  options:NSRegularExpressionCaseInsensitive
                                    error:&error];
         if (!pattern) {
@@ -1180,6 +1205,14 @@ NSRegularExpression *escCharPattern() {
         }
     }
     return pattern;
+}
+
+NSString *trimAllANSIControlCharsForText(NSString *content) {
+    NSString *originalContent = [escCharPattern() stringByReplacingMatchesInString:content
+                                                                           options:0
+                                                                             range:NSMakeRange(0, content.length)
+                                                                      withTemplate:@""];
+    return originalContent;
 }
 
 NSSearchField *getSearchField(id consoleArea) {
