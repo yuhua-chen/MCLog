@@ -1111,12 +1111,16 @@ static const char kUnProcessedOutputKey;
         [consoleTextView performSelector:@selector(clearConsoleItems) withObject:nil];
     }
 
-    NSArray *sortedItems = [OriginConsoleItemsMap[hash(consoleArea)] orderedItems];
-
-    if ([consoleArea respondsToSelector:@selector(_appendItems:)]) {
-        [consoleArea performSelector:@selector(_appendItems:) withObject:sortedItems];
+    NSString *cacheKey = hash(consoleArea);
+    if (cacheKey) {
+        NSArray *sortedItems = [OriginConsoleItemsMap[cacheKey] orderedItems];
+        
+        if ([consoleArea respondsToSelector:@selector(_appendItems:)]) {
+            [consoleArea performSelector:@selector(_appendItems:) withObject:sortedItems];
+        }
+        [SearchPatternsDic removeObjectForKey:cacheKey];
     }
-    [SearchPatternsDic removeObjectForKey:hash(consoleArea)];
+    
 #pragma clang diagnostic pop
 }
 
