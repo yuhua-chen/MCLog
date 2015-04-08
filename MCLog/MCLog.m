@@ -828,13 +828,17 @@ static const void *kTimerKey;
     if ([consoleTextView respondsToSelector:@selector(clearConsoleItems)]) {
         [consoleTextView performSelector:@selector(clearConsoleItems) withObject:nil];
     }
-    
-    NSArray *sortedItems = [OriginConsoleItemsMap[hash(consoleArea)] orderedItems];
-    
-    if ([consoleArea respondsToSelector:@selector(_appendItems:)]) {
-        [consoleArea performSelector:@selector(_appendItems:) withObject:sortedItems];
-    }
-    [SearchPatternsDic removeObjectForKey:hash(consoleArea)];
+
+	NSString *cachedKey = hash(consoleArea);
+	if (cachedKey) {
+		NSArray *sortedItems = [OriginConsoleItemsMap[hash(consoleArea)] orderedItems];
+
+		if ([consoleArea respondsToSelector:@selector(_appendItems:)]) {
+			[consoleArea performSelector:@selector(_appendItems:) withObject:sortedItems];
+		}
+
+		[SearchPatternsDic removeObjectForKey:hash(consoleArea)];
+	}
 #pragma clang diagnostic pop
 }
 
