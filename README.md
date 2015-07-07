@@ -1,6 +1,6 @@
 #MCLog
 
-This plugin let you feel easy to trace console log. Although you may search the text in the console area, you can't hide something you don't want to see. MCLog is one of the solutions. You're able to filter the console by it and display what you really want to see. Here's the demo:
+This plugin lets you easily filter the Xcode console log output. While you can already search the text in the console log output you are still left searching through a lot of code that has nothing to do with what you're interested in. MCLog is a simple solution to this problem. Filter the console using simple strings and display what you really want to see. Here's the demo:
 
 ![screen-shot](https://rawgithub.com/yuhua-chen/MCLog/master/MCLogScreenshot.gif)
 
