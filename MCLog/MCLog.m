@@ -406,7 +406,7 @@ static void *kLastAttributeKey;
 
 - (void)fixAttributesInRange:(NSRange)range
 {
-    OriginalFixAttributesInRangeIMP(self, _cmd, range);
+//    OriginalFixAttributesInRangeIMP(self, _cmd, range);
     
     __block NSRange lastRange = NSMakeRange(range.location, 0);
     NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
