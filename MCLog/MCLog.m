@@ -124,6 +124,7 @@ NSAssert(self.keys.count == self.items.count, @"keys and items are not matched!"
 
 @end
 
+
 ////////////////////////////////////////////////////////////////////////////////////
 #pragma mark - NSSearchField (MCLog)
 @interface NSSearchField (MCLog)
@@ -341,15 +342,20 @@ static IMP OriginalClearTextIMP = nil;
     if (searchField.stringValue.length == 0) {
         return YES;
     }
-	
-	// test with the regular expression
+
+    // Remove prefix log pattern
 	NSString *content = [obj content];
-	NSRange range = NSMakeRange(0, content.length);
+    NSRange range = NSMakeRange(0, content.length);
+
+    NSRegularExpression *logRegex = logItemPrefixPattern();
+    content = [logRegex stringByReplacingMatchesInString:content options:(NSRegularExpressionCaseInsensitive | NSRegularExpressionDotMatchesLineSeparators) range:range withTemplate:@""];
+
     
     if (SearchPatternsDic == nil) {
         SearchPatternsDic = [NSMutableDictionary dictionary];
     }
-    
+
+    // Test with user's regex pattern
     NSError *error;
     NSRegularExpression *regex = SearchPatternsDic[hash(self)];
     if (regex == nil || ![regex.pattern isEqualToString:searchField.stringValue]) {
@@ -364,8 +370,8 @@ static IMP OriginalClearTextIMP = nil;
         SearchPatternsDic[hash(self)] = regex;
     }
     
-    
-    NSArray *matches = [regex matchesInString:content options:0 range:range];	
+    range = NSMakeRange(0, content.length);
+    NSArray *matches = [regex matchesInString:content options:0 range:range];
 	if ([matches count] > 0
         || [[obj valueForKey:@"input"] boolValue]
         || [[obj valueForKey:@"prompt"] boolValue]
@@ -383,9 +389,6 @@ static IMP OriginalClearTextIMP = nil;
 	[OriginConsoleItemsMap removeObjectForKey:hash(self)];
 }
 @end
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////////////
 #pragma mark - MCDVTTextStorage
@@ -407,7 +410,7 @@ static void *kLastAttributeKey;
 - (void)fixAttributesInRange:(NSRange)range
 {
     OriginalFixAttributesInRangeIMP(self, _cmd, range);
-    
+
     __block NSRange lastRange = NSMakeRange(range.location, 0);
     NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
     if (self.lastAttribute.count > 0) {
@@ -560,47 +563,46 @@ static IMP originalOutputForStandardOutputIMP = nil;
 
 
 static const void *kUnProcessedOutputKey;
-static const void *kTimerKey;
+
+static dispatch_queue_t buffer_queue() {
+    static dispatch_queue_t mclog_buffer_queue = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        mclog_buffer_queue = dispatch_queue_create("io.michaelchen.mclog.buffer-queue", DISPATCH_QUEUE_SERIAL);
+    });
+
+    return mclog_buffer_queue;
+}
 
 @interface NSObject (MCIDEConsoleAdaptor)
-- (void)setUnprocessedOutput:(NSString *)output;
-- (NSString *)unprocessedOutput;
 
-- (void)setTimer:(NSTimer *)timer;
-- (NSTimer *)timer;
+- (void)setUnprocessedOutputInfo:(NSDictionary *)outputInfo;
+- (NSDictionary *)unprocessedOutputInfo;
+- (void)MCOutputUnprocessedBuffer;
 
-- (void)timerTimeout:(NSTimer *)timer;
 @end
 
 @implementation NSObject (MCIDEConsoleAdaptor)
 
-- (void)setUnprocessedOutput:(NSString *)output
+- (void)setUnprocessedOutputInfo:(NSDictionary *)outputInfo
 {
-    objc_setAssociatedObject(self, &kUnProcessedOutputKey, output, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, &kUnProcessedOutputKey, outputInfo, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (NSString *)unprocessedOutput
+- (NSDictionary *)unprocessedOutputInfo
 {
     return objc_getAssociatedObject(self, &kUnProcessedOutputKey);
 }
 
-- (void)setTimer:(NSTimer *)timer
+- (void)MCOutputUnprocessedBuffer
 {
-    objc_setAssociatedObject(self, &kTimerKey, timer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (NSTimer *)timer
-{
-    return objc_getAssociatedObject(self, &kTimerKey);
-}
-
-- (void)timerTimeout:(NSTimer *)timer
-{
-    if (self.unprocessedOutput.length > 0) {
-        NSArray *args = timer.userInfo;
-        originalOutputForStandardOutputIMP(self, _cmd, self.unprocessedOutput, [args[0] boolValue], [args[1] boolValue]);
+    NSDictionary *unprocessedOutputInfo = self.unprocessedOutputInfo;
+    if (unprocessedOutputInfo) {
+        [self setUnprocessedOutputInfo:nil];
+            originalOutputForStandardOutputIMP(self, _cmd, [unprocessedOutputInfo[@"content"] stringValue],
+                                               [unprocessedOutputInfo[@"isPrompt"] boolValue],
+                                               [unprocessedOutputInfo[@"isOutputRequestedByUser"] boolValue]);
     }
-    self.unprocessedOutput = nil;
 }
 
 @end
@@ -610,16 +612,14 @@ static const void *kTimerKey;
 
 - (void)outputForStandardOutput:(id)arg1 isPrompt:(BOOL)arg2 isOutputRequestedByUser:(BOOL)arg3
 {
-    [self.timer invalidate];
-    self.timer = nil;
-    
     NSRegularExpression *logSeperatorPattern = logItemPrefixPattern();
 
-    NSString *unprocessedstring = self.unprocessedOutput;
+    NSString *unprocessedString = self.unprocessedOutputInfo[@"content"];
+    [self setUnprocessedOutputInfo:nil];
+
     NSString *buffer = arg1;
-    if (unprocessedstring.length > 0) {
-        buffer = [unprocessedstring stringByAppendingString:arg1];
-        self.unprocessedOutput = nil;
+    if (unprocessedString.length > 0) {
+        buffer = [unprocessedString stringByAppendingString:arg1];
     }
     
     if (logSeperatorPattern) {
@@ -627,27 +627,39 @@ static const void *kTimerKey;
         if (matches.count > 0) {
             NSRange lastMatchingRange = NSMakeRange(NSNotFound, 0);
             for (NSTextCheckingResult *result in matches) {
-                
                 if (lastMatchingRange.location != NSNotFound) {
                     NSString *logItemData = [buffer substringWithRange:NSMakeRange(lastMatchingRange.location, result.range.location - lastMatchingRange.location)];
-                    originalOutputForStandardOutputIMP(self, _cmd, logItemData, arg2, arg3);
+                    dispatch_async(buffer_queue(), ^{
+                        originalOutputForStandardOutputIMP(self, _cmd, logItemData, arg2, arg3);
+                    });
                 }
                 lastMatchingRange = result.range;
             }
+
             if (lastMatchingRange.location + lastMatchingRange.length < [buffer length]) {
-                self.unprocessedOutput = [buffer substringFromIndex:lastMatchingRange.location];
+                unprocessedString = [buffer substringFromIndex:lastMatchingRange.location];
             }
+
         } else {
-            originalOutputForStandardOutputIMP(self, _cmd, buffer, arg2, arg3);
+            dispatch_async(buffer_queue(), ^{
+                originalOutputForStandardOutputIMP(self, _cmd, buffer, arg2, arg3);
+            });
         }
     } else {
-        originalOutputForStandardOutputIMP(self, _cmd, arg1, arg2, arg3);
+        dispatch_async(buffer_queue(), ^{
+            originalOutputForStandardOutputIMP(self, _cmd, arg1, arg2, arg3);
+        });
     }
-    
-    if (self.unprocessedOutput.length > 0) {
-        self.timer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(timerTimeout:) userInfo:@[ @(arg2), @(arg3) ] repeats:NO];
+
+    if (unprocessedString.length > 0) {
+        [self setUnprocessedOutputInfo:@{@"content": unprocessedString,
+                                         @"isPrompt": @(arg2),
+                                         @"isOutputRequestedByUser": @(arg3)}];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.005 * NSEC_PER_SEC)), buffer_queue(), ^{
+            [self MCOutputUnprocessedBuffer];
+        });
     }
-    
+
 }
 
 @end
