@@ -200,6 +200,10 @@ static const void *LogLevelAssociateKey;
     if (![[item valueForKey:@"output"] boolValue] || [[item valueForKey:@"outputRequestedByUser"] boolValue]) {
         return;
     }
+
+	if (!logText) {
+		return;
+	}
     
     NSRange prefixRange = [logItemPrefixPattern() rangeOfFirstMatchInString:logText options:0 range:NSMakeRange(0, logText.length)];
     if (prefixRange.location != 0 || logText.length <= prefixRange.length) {
