@@ -25,6 +25,10 @@ or
 
 If you encounter any issues you can uninstall it by removing the `~/Library/Application Support/Developer/Shared/Xcode/Plug-ins/MCLog.xcplugin`.
 
+## Notice
+
+If you upgrade OSX to 10.11(El Capitain), please run this command `sudo xcodebuild -license` after install MCLog.
+
 ## License
 
 MCLog is under MIT.  See the LICENSE file for more info.
