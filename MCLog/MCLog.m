@@ -87,7 +87,6 @@ NSAssert(self.keys.count == self.items.count, @"keys and items are not matched!"
     NSUInteger keyIndex = [self.keys indexOfObject:key];
     if (keyIndex == NSNotFound) {
         [self.keys addObject:key];
-        keyIndex = [self.keys indexOfObject:key];
         [self.items addObject:object];
     } else {
         [self.items replaceObjectAtIndex:keyIndex withObject:object];
@@ -396,6 +395,7 @@ static IMP OriginalClearTextIMP = nil;
 
 ///////////////////////////////////////////////////////////////////////////////////
 #pragma mark - MCDVTTextStorage
+
 static IMP OriginalFixAttributesInRangeIMP      = nil;
 
 static void *kLastAttributeKey;
@@ -406,6 +406,8 @@ static void *kLastAttributeKey;
 @interface NSObject (DVTTextStorage)
 - (void)setLastAttribute:(NSDictionary *)attribute;
 - (NSDictionary *)lastAttribute;
+- (void)setConsoleStorage:(BOOL)consoleStorage;
+- (BOOL)consoleStorage;
 - (void)updateAttributes:(NSMutableDictionary *)attrs withANSIESCString:(NSString *)ansiEscString;
 @end
 
@@ -413,7 +415,13 @@ static void *kLastAttributeKey;
 
 - (void)fixAttributesInRange:(NSRange)range
 {
-    OriginalFixAttributesInRangeIMP(self, _cmd, range);
+	// To ignore those text storages which are not for console.
+	if (!self.consoleStorage) {
+		return;
+	}
+
+	// Workaround: Comment it out in case of EXC_BAD_ACCESS.
+	// OriginalFixAttributesInRangeIMP(self, _cmd, range);
 
     __block NSRange lastRange = NSMakeRange(range.location, 0);
     NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
@@ -461,6 +469,16 @@ static void *kLastAttributeKey;
 - (NSDictionary *)lastAttribute
 {
     return objc_getAssociatedObject(self, &kLastAttributeKey);
+}
+
+- (void)setConsoleStorage:(BOOL)consoleStorage
+{
+	objc_setAssociatedObject(self, @selector(consoleStorage), @(consoleStorage), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (BOOL)consoleStorage
+{
+	return [objc_getAssociatedObject(self, @selector(consoleStorage)) boolValue];
 }
 
 - (void)updateAttributes:(NSMutableDictionary *)attrs withANSIESCString:(NSString *)ansiEscString
@@ -754,6 +772,11 @@ static dispatch_queue_t buffer_queue() {
     if (!consoleTextView) {
         return NO;
     }
+
+	MCDVTTextStorage *textStorage = [consoleTextView valueForKey:@"textStorage"];
+	if ([textStorage respondsToSelector:@selector(setConsoleStorage:)]) {
+		[textStorage setConsoleStorage:YES];
+	}
     
     contentView = [self getParantViewByClassName:@"DVTControllerContentView" andView:consoleTextView];
     NSView *scopeBarView = [self getViewByClassName:@"DVTScopeBarView" andContainerView:contentView];
@@ -895,7 +918,6 @@ void hookIDEConsoleItem()
 void hookDVTTextStorage()
 {
     Class DVTTextStorage = NSClassFromString(@"DVTTextStorage");
-    
     Method fixAttributesInRange = class_getInstanceMethod(DVTTextStorage, @selector(fixAttributesInRange:));
     OriginalFixAttributesInRangeIMP = method_getImplementation(fixAttributesInRange);
     IMP newFixAttributesInRangeIMP = class_getMethodImplementation([MCDVTTextStorage class], @selector(fixAttributesInRange:));
