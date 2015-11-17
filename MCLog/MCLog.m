@@ -7,15 +7,11 @@
 //
 
 #import "MCLog.h"
+#import "MCXcodeHeaders.h"
+#import "MCDVTTextStorage.h"
 #import <objc/runtime.h>
 #include <execinfo.h>
 
-#define MCLOG_FLAG "MCLOG_FLAG"
-#define kTagSearchField	99
-
-#define MCLogger(fmt, ...) NSLog((@"[MCLog] %s(Line:%d) " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
-
-#define NSColorWithHexRGB(rgb) [NSColor colorWithCalibratedRed:((rgb) >> 16 & 0xFF) / 255.f green:((rgb) >> 8 & 0xFF) / 255.f  blue:((rgb) & 0xFF) / 255.f  alpha:1.f]
 
 @class MCLogIDEConsoleArea;
 
@@ -27,7 +23,7 @@ NSSearchField *getSearchField(id consoleArea);
 NSString *hash(id obj);
 
 NSArray *backtraceStack();
-void hookDVTTextStorage();
+void swizzleDVTTextStorage();
 void hookIDEConsoleAdaptor();
 void hookIDEConsoleArea();
 void hookIDEConsoleItem();
@@ -394,188 +390,6 @@ static IMP OriginalClearTextIMP = nil;
 @end
 
 ///////////////////////////////////////////////////////////////////////////////////
-#pragma mark - MCDVTTextStorage
-
-static IMP OriginalFixAttributesInRangeIMP      = nil;
-
-static void *kLastAttributeKey;
-@interface MCDVTTextStorage : NSTextStorage
-- (void)fixAttributesInRange:(NSRange)range;
-@end
-
-@interface NSObject (DVTTextStorage)
-- (void)setLastAttribute:(NSDictionary *)attribute;
-- (NSDictionary *)lastAttribute;
-- (void)setConsoleStorage:(BOOL)consoleStorage;
-- (BOOL)consoleStorage;
-- (void)updateAttributes:(NSMutableDictionary *)attrs withANSIESCString:(NSString *)ansiEscString;
-@end
-
-@implementation MCDVTTextStorage
-
-- (void)fixAttributesInRange:(NSRange)range
-{
-	// To ignore those text storages which are not for console.
-	if (!self.consoleStorage) {
-		return;
-	}
-
-	// Workaround: Comment it out in case of EXC_BAD_ACCESS.
-	// OriginalFixAttributesInRangeIMP(self, _cmd, range);
-
-    __block NSRange lastRange = NSMakeRange(range.location, 0);
-    NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
-    if (self.lastAttribute.count > 0) {
-        [attrs setValuesForKeysWithDictionary:self.lastAttribute];
-    }
-
-    [escCharPattern() enumerateMatchesInString:self.string options:0 range:range usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
-        if (attrs.count > 0) {
-            NSRange attrRange = NSMakeRange(lastRange.location, result.range.location - lastRange.location);
-            [self addAttributes:attrs range:attrRange];
-            //MCLogger(@"apply attributes:%@\nin range:[%zd, %zd], affected string:%@", attrs, attrRange.location, attrRange.length, [self.string substringWithRange:attrRange]);
-        }
-        
-        NSString *attrsDesc = [self.string substringWithRange:[result rangeAtIndex:1]];
-        if (attrsDesc.length == 0) {
-            [self addAttributes:@{
-                                  NSFontAttributeName: [NSFont systemFontOfSize:0.000001f],
-                                  NSForegroundColorAttributeName: [NSColor clearColor]
-                                 }
-                          range:result.range];
-            lastRange = result.range;
-            return;
-        }
-        [self updateAttributes:attrs withANSIESCString:attrsDesc];
-        [self addAttributes:@{
-                              NSFontAttributeName: [NSFont systemFontOfSize:0.000001f],
-                              NSForegroundColorAttributeName: [NSColor clearColor]
-                              }
-                      range:result.range];
-        lastRange = result.range;
-    }];
-    self.lastAttribute = attrs;
-}
-
-@end
-
-@implementation NSObject (DVTTextStorage)
-
-- (void)setLastAttribute:(NSDictionary *)attribute
-{
-    objc_setAssociatedObject(self, &kLastAttributeKey, attribute, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (NSDictionary *)lastAttribute
-{
-    return objc_getAssociatedObject(self, &kLastAttributeKey);
-}
-
-- (void)setConsoleStorage:(BOOL)consoleStorage
-{
-	objc_setAssociatedObject(self, @selector(consoleStorage), @(consoleStorage), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (BOOL)consoleStorage
-{
-	return [objc_getAssociatedObject(self, @selector(consoleStorage)) boolValue];
-}
-
-- (void)updateAttributes:(NSMutableDictionary *)attrs withANSIESCString:(NSString *)ansiEscString
-{
-    NSArray *attrComponents = [ansiEscString componentsSeparatedByString:@";"];
-    for (NSString *attrName in attrComponents) {
-        NSUInteger attrCode = [attrName integerValue];
-        switch (attrCode) {
-            case 0:
-                [attrs removeAllObjects];
-                break;
-                
-            case 1:
-                [attrs setObject:[NSFont boldSystemFontOfSize:11.f] forKey:NSFontAttributeName];
-                break;
-                
-            case 4:
-                [attrs setObject:@( NSUnderlineStyleSingle ) forKey:NSUnderlineStyleAttributeName];
-                break;
-                
-            case 24:
-                [attrs setObject:@(NSUnderlineStyleNone ) forKey:NSUnderlineStyleAttributeName];
-                break;
-                //foreground color
-            case 30: //black
-                [attrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
-                break;
-                
-            case 31: // Red
-                [attrs setObject:NSColorWithHexRGB(0xd70000) forKey:NSForegroundColorAttributeName];
-                break;
-                
-            case 32: // Green
-                [attrs setObject:NSColorWithHexRGB(0x00ff00) forKey:NSForegroundColorAttributeName];
-                break;
-                
-            case 33: // Yellow
-                [attrs setObject:NSColorWithHexRGB(0xffff00) forKey:NSForegroundColorAttributeName];
-                break;
-                
-            case 34: // Blue
-                [attrs setObject:NSColorWithHexRGB(0x005fff) forKey:NSForegroundColorAttributeName];
-                break;
-                
-            case 35: // purple
-                [attrs setObject:NSColorWithHexRGB(0xff00ff) forKey:NSForegroundColorAttributeName];
-                break;
-                
-            case 36: // cyan
-                [attrs setObject:NSColorWithHexRGB(0x00ffff) forKey:NSForegroundColorAttributeName];
-                break;
-                
-            case 37: // gray
-                [attrs setObject:NSColorWithHexRGB(0x808080) forKey:NSForegroundColorAttributeName];
-                break;
-                //background color
-            case 40: //black
-                [attrs setObject:[NSColor blackColor] forKey:NSBackgroundColorAttributeName];
-                break;
-                
-            case 41: // Red
-                [attrs setObject:NSColorWithHexRGB(0xd70000) forKey:NSBackgroundColorAttributeName];
-                break;
-                
-            case 42: // Green
-                [attrs setObject:NSColorWithHexRGB(0x00ff00) forKey:NSBackgroundColorAttributeName];
-                break;
-                
-            case 43: // Yellow
-                [attrs setObject:NSColorWithHexRGB(0xffff00) forKey:NSBackgroundColorAttributeName];
-                break;
-                
-            case 44: // Blue
-                [attrs setObject:NSColorWithHexRGB(0x005fff) forKey:NSBackgroundColorAttributeName];
-                break;
-                
-            case 45: // purple
-                [attrs setObject:NSColorWithHexRGB(0xff00ff) forKey:NSBackgroundColorAttributeName];
-                break;
-                
-            case 46: // cyan
-                [attrs setObject:NSColorWithHexRGB(0x00ffff) forKey:NSBackgroundColorAttributeName];
-                break;
-                
-            case 47: // gray
-                [attrs setObject:NSColorWithHexRGB(0x808080) forKey:NSBackgroundColorAttributeName];
-                break;
-                
-            default:
-                break;
-        }
-    }
-}
-
-@end
-
-///////////////////////////////////////////////////////////////////////////////////
 #pragma mark - MCIDEConsoleAdaptor
 static IMP originalOutputForStandardOutputIMP = nil;
 
@@ -702,8 +516,8 @@ static dispatch_queue_t buffer_queue() {
         // alreay installed plugin
         return;
     }
-    
-    hookDVTTextStorage();
+
+	swizzleDVTTextStorage();
     hookIDEConsoleAdaptor();
     hookIDEConsoleArea();
     hookIDEConsoleItem();
@@ -773,11 +587,11 @@ static dispatch_queue_t buffer_queue() {
         return NO;
     }
 
-	MCDVTTextStorage *textStorage = [consoleTextView valueForKey:@"textStorage"];
+	DVTTextStorage *textStorage = [consoleTextView valueForKey:@"textStorage"];
 	if ([textStorage respondsToSelector:@selector(setConsoleStorage:)]) {
 		[textStorage setConsoleStorage:YES];
 	}
-    
+
     contentView = [self getParantViewByClassName:@"DVTControllerContentView" andView:consoleTextView];
     NSView *scopeBarView = [self getViewByClassName:@"DVTScopeBarView" andContainerView:contentView];
     if (!scopeBarView) {
@@ -915,13 +729,18 @@ void hookIDEConsoleItem()
     method_setImplementation(consoleItemInit, newConsoleItemInit);
 }
 
-void hookDVTTextStorage()
+void swizzleDVTTextStorage()
 {
-    Class DVTTextStorage = NSClassFromString(@"DVTTextStorage");
-    Method fixAttributesInRange = class_getInstanceMethod(DVTTextStorage, @selector(fixAttributesInRange:));
-    OriginalFixAttributesInRangeIMP = method_getImplementation(fixAttributesInRange);
-    IMP newFixAttributesInRangeIMP = class_getMethodImplementation([MCDVTTextStorage class], @selector(fixAttributesInRange:));
-    method_setImplementation(fixAttributesInRange, newFixAttributesInRangeIMP);
+	Class DVTTextStorage = NSClassFromString(@"DVTTextStorage");
+	Method fixAttributesInRange = class_getInstanceMethod(DVTTextStorage, @selector(fixAttributesInRange:));
+	Method swizzledFixAttributesInRange = class_getInstanceMethod(DVTTextStorage, @selector(mc_fixAttributesInRange:));
+
+	BOOL didAddMethod = class_addMethod(DVTTextStorage, @selector(fixAttributesInRange:), method_getImplementation(swizzledFixAttributesInRange), method_getTypeEncoding(swizzledFixAttributesInRange));
+	if (didAddMethod) {
+		class_replaceMethod(DVTTextStorage, @selector(mc_fixAttributesInRange:), method_getImplementation(fixAttributesInRange), method_getTypeEncoding(swizzledFixAttributesInRange));
+	} else {
+		method_exchangeImplementations(fixAttributesInRange, swizzledFixAttributesInRange);
+	}
 }
 
 void hookIDEConsoleAdaptor()
@@ -943,19 +762,6 @@ NSRegularExpression * logItemPrefixPattern()
         pattern = [NSRegularExpression regularExpressionWithPattern:@"\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}[\\.:]\\d{3}\\s+.+\\[[\\da-fA-F]+:[\\da-fA-F]+\\]\\s+"
             options:NSRegularExpressionCaseInsensitive
               error:&error];
-        if (!pattern) {
-            MCLogger(@"%@", error);
-        }
-    }
-    return pattern;
-}
-
-NSRegularExpression * escCharPattern()
-{
-    static NSRegularExpression *pattern = nil;
-    if (pattern == nil) {
-        NSError *error = nil;
-        pattern = [NSRegularExpression regularExpressionWithPattern:(LC_ESC @"\\[([\\d;]*\\d+)m") options:0 error:&error];
         if (!pattern) {
             MCLogger(@"%@", error);
         }

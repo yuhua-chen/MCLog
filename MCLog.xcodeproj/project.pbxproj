@@ -10,6 +10,7 @@
 		8CBAF63C198B88C70067171A /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8CBAF63B198B88C70067171A /* CoreFoundation.framework */; };
 		8CBAF642198B88C70067171A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8CBAF640198B88C70067171A /* InfoPlist.strings */; };
 		8CBAF64B198B88DD0067171A /* MCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 8CBAF64A198B88DD0067171A /* MCLog.m */; };
+		8CEB067E1BFADD0F00ED4438 /* MCDVTTextStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 8CEB067D1BFADD0F00ED4438 /* MCDVTTextStorage.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +21,9 @@
 		8CBAF643198B88C70067171A /* MCLog-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MCLog-Prefix.pch"; sourceTree = "<group>"; };
 		8CBAF649198B88DD0067171A /* MCLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCLog.h; sourceTree = "<group>"; };
 		8CBAF64A198B88DD0067171A /* MCLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCLog.m; sourceTree = "<group>"; };
+		8CEB067B1BFADA1700ED4438 /* MCXcodeHeaders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MCXcodeHeaders.h; sourceTree = "<group>"; };
+		8CEB067C1BFADD0F00ED4438 /* MCDVTTextStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCDVTTextStorage.h; sourceTree = "<group>"; };
+		8CEB067D1BFADD0F00ED4438 /* MCDVTTextStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCDVTTextStorage.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +69,9 @@
 				8CBAF63E198B88C70067171A /* Supporting Files */,
 				8CBAF649198B88DD0067171A /* MCLog.h */,
 				8CBAF64A198B88DD0067171A /* MCLog.m */,
+				8CEB067C1BFADD0F00ED4438 /* MCDVTTextStorage.h */,
+				8CEB067D1BFADD0F00ED4438 /* MCDVTTextStorage.m */,
+				8CEB067B1BFADA1700ED4438 /* MCXcodeHeaders.h */,
 			);
 			path = MCLog;
 			sourceTree = "<group>";
@@ -142,6 +149,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8CBAF64B198B88DD0067171A /* MCLog.m in Sources */,
+				8CEB067E1BFADD0F00ED4438 /* MCDVTTextStorage.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
