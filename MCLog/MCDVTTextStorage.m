@@ -7,17 +7,34 @@
 //
 
 #import "MCDVTTextStorage.h"
+#import "MethodSwizzle.h"
 #import <objc/runtime.h>
 
 #define NSColorWithHexRGB(rgb) [NSColor colorWithCalibratedRed:((rgb) >> 16 & 0xFF) / 255.f green:((rgb) >> 8 & 0xFF) / 255.f  blue:((rgb) & 0xFF) / 255.f  alpha:1.f]
 
 NSRegularExpression * escCharPattern();
 
+//@interface NSObject (MCDVTTextStorage_Extension)
+//@property(nonatomic, readonly) NSString *string;
+//
+//- (void)addAttributes:(NSDictionary<NSString *, id> *)attrs range:(NSRange)range;
+//@end
+
 @implementation NSTextStorage (MCDVTTextStorage)
 
 - (void)mc_fixAttributesInRange:(NSRange)range
 {
-	[self mc_fixAttributesInRange:range];
+//    MCLogger(@"\nstring:%@", self.string);
+//    IMP originalIMP = nil;
+//    if (originalIMP == nil) {
+//        Class clazz = NSClassFromString(@"DVTTextStorage");
+//        originalIMP = [MethodSwizzleHelper originalIMPForClass:clazz selector:@selector(fixAttributesInRange:)];
+//    }
+//    if (originalIMP) {
+//        originalIMP(self, _cmd, range);
+//    }
+    
+    [self mc_fixAttributesInRange:range];
 
 	if (!self.consoleStorage) {
 		return;
@@ -29,32 +46,38 @@ NSRegularExpression * escCharPattern();
 		[attrs setValuesForKeysWithDictionary:self.lastAttribute];
 	}
 
-	[escCharPattern() enumerateMatchesInString:self.string options:0 range:range usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
-		if (attrs.count > 0) {
-			NSRange attrRange = NSMakeRange(lastRange.location, result.range.location - lastRange.location);
-			[self addAttributes:attrs range:attrRange];
-			//MCLogger(@"apply attributes:%@\nin range:[%zd, %zd], affected string:%@", attrs, attrRange.location, attrRange.length, [self.string substringWithRange:attrRange]);
-		}
+    [escCharPattern()
+        enumerateMatchesInString:self.string
+                         options:0
+                           range:range
+                      usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
+                          if (attrs.count > 0) {
+                              NSRange attrRange =
+                                  NSMakeRange(lastRange.location, result.range.location - lastRange.location);
+                              [self addAttributes:attrs range:attrRange];
+                              // MCLogger(@"apply attributes:%@\nin range:[%zd, %zd], affected string:%@", attrs,
+                              // attrRange.location, attrRange.length, [self.string substringWithRange:attrRange]);
+                          }
 
-		NSString *attrsDesc = [self.string substringWithRange:[result rangeAtIndex:1]];
-		if (attrsDesc.length == 0) {
-			[self addAttributes:@{
-								  NSFontAttributeName: [NSFont systemFontOfSize:0.000001f],
-								  NSForegroundColorAttributeName: [NSColor clearColor]
-								  }
-						  range:result.range];
-			lastRange = result.range;
-			return;
-		}
-		[self updateAttributes:attrs withANSIESCString:attrsDesc];
-		[self addAttributes:@{
-							  NSFontAttributeName: [NSFont systemFontOfSize:0.000001f],
-							  NSForegroundColorAttributeName: [NSColor clearColor]
-							  }
-					  range:result.range];
-		lastRange = result.range;
-	}];
-	self.lastAttribute = attrs;
+                          NSString *attrsDesc = [self.string substringWithRange:[result rangeAtIndex:1]];
+                          if (attrsDesc.length == 0) {
+                              [self addAttributes:@{
+                                  NSFontAttributeName : [NSFont systemFontOfSize:0.000001f],
+                                  NSForegroundColorAttributeName : [NSColor clearColor]
+                              }
+                                            range:result.range];
+                              lastRange = result.range;
+                              return;
+                          }
+                          [self updateAttributes:attrs withANSIESCString:attrsDesc];
+                          [self addAttributes:@{
+                              NSFontAttributeName : [NSFont systemFontOfSize:0.000001f],
+                              NSForegroundColorAttributeName : [NSColor clearColor]
+                          }
+                                        range:result.range];
+                          lastRange = result.range;
+                      }];
+    self.lastAttribute = attrs;
 }
 
 - (void)updateAttributes:(NSMutableDictionary *)attrs withANSIESCString:(NSString *)ansiEscString
@@ -159,14 +182,15 @@ NSRegularExpression * escCharPattern();
 	return objc_getAssociatedObject(self, @selector(lastAttribute));
 }
 
+
 - (void)setConsoleStorage:(BOOL)consoleStorage
 {
-	objc_setAssociatedObject(self, @selector(consoleStorage), @(consoleStorage), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, @selector(consoleStorage), @(consoleStorage), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (BOOL)consoleStorage
 {
-	return [objc_getAssociatedObject(self, @selector(consoleStorage)) boolValue];
+    return [objc_getAssociatedObject(self, @selector(consoleStorage)) boolValue];
 }
 
 @end

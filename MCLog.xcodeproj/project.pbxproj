@@ -7,6 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		436980241C3C34A200BB7702 /* HHTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = 436980231C3C34A200BB7702 /* HHTimer.m */; };
+		43A0EFAD1C3C449000F54B51 /* NSSearchField+MCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFAC1C3C448F00F54B51 /* NSSearchField+MCLog.m */; };
+		43A0EFB01C3C459100F54B51 /* MCIDEConsoleItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFAF1C3C459100F54B51 /* MCIDEConsoleItem.m */; };
+		43A0EFB31C3C46CF00F54B51 /* MCLogIDEConsoleArea.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFB21C3C46CF00F54B51 /* MCLogIDEConsoleArea.m */; };
+		43A0EFB61C3CB0AB00F54B51 /* MCIDEConsoleAdaptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFB51C3CB0AA00F54B51 /* MCIDEConsoleAdaptor.m */; };
+		43A0EFB91C3CB2C800F54B51 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFB81C3CB2C800F54B51 /* Utils.m */; };
+		43A0EFCC1C3CBC4100F54B51 /* MethodSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFCB1C3CBC4100F54B51 /* MethodSwizzle.m */; };
+		43A0EFCF1C3CC82900F54B51 /* NSView+MCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFCE1C3CC82900F54B51 /* NSView+MCLog.m */; };
+		43BEF0481C3C3A31004A9D3C /* MCOrderedMap.m in Sources */ = {isa = PBXBuildFile; fileRef = 43BEF0471C3C3A31004A9D3C /* MCOrderedMap.m */; };
 		43C26A021A9D774E00BE9280 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C26A011A9D774E00BE9280 /* main.m */; };
 		43C26A051A9D774E00BE9280 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C26A041A9D774E00BE9280 /* AppDelegate.m */; };
 		43C26A071A9D774E00BE9280 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 43C26A061A9D774E00BE9280 /* Images.xcassets */; };
@@ -30,6 +39,24 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		436980221C3C34A200BB7702 /* HHTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HHTimer.h; sourceTree = "<group>"; };
+		436980231C3C34A200BB7702 /* HHTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HHTimer.m; sourceTree = "<group>"; };
+		43A0EFAB1C3C448F00F54B51 /* NSSearchField+MCLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSSearchField+MCLog.h"; sourceTree = "<group>"; };
+		43A0EFAC1C3C448F00F54B51 /* NSSearchField+MCLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSSearchField+MCLog.m"; sourceTree = "<group>"; };
+		43A0EFAE1C3C459100F54B51 /* MCIDEConsoleItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCIDEConsoleItem.h; sourceTree = "<group>"; };
+		43A0EFAF1C3C459100F54B51 /* MCIDEConsoleItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCIDEConsoleItem.m; sourceTree = "<group>"; };
+		43A0EFB11C3C46CF00F54B51 /* MCLogIDEConsoleArea.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCLogIDEConsoleArea.h; sourceTree = "<group>"; };
+		43A0EFB21C3C46CF00F54B51 /* MCLogIDEConsoleArea.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCLogIDEConsoleArea.m; sourceTree = "<group>"; };
+		43A0EFB41C3CB0AA00F54B51 /* MCIDEConsoleAdaptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCIDEConsoleAdaptor.h; sourceTree = "<group>"; };
+		43A0EFB51C3CB0AA00F54B51 /* MCIDEConsoleAdaptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCIDEConsoleAdaptor.m; sourceTree = "<group>"; };
+		43A0EFB71C3CB2C800F54B51 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
+		43A0EFB81C3CB2C800F54B51 /* Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Utils.m; sourceTree = "<group>"; };
+		43A0EFCA1C3CBC4100F54B51 /* MethodSwizzle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MethodSwizzle.h; sourceTree = "<group>"; };
+		43A0EFCB1C3CBC4100F54B51 /* MethodSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MethodSwizzle.m; sourceTree = "<group>"; };
+		43A0EFCD1C3CC82900F54B51 /* NSView+MCLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSView+MCLog.h"; sourceTree = "<group>"; };
+		43A0EFCE1C3CC82900F54B51 /* NSView+MCLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSView+MCLog.m"; sourceTree = "<group>"; };
+		43BEF0461C3C3A31004A9D3C /* MCOrderedMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCOrderedMap.h; sourceTree = "<group>"; };
+		43BEF0471C3C3A31004A9D3C /* MCOrderedMap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCOrderedMap.m; sourceTree = "<group>"; };
 		43C269FD1A9D774E00BE9280 /* MCLogIOS_Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MCLogIOS_Demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		43C26A001A9D774E00BE9280 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		43C26A011A9D774E00BE9280 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -80,6 +107,40 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		43BEF0441C3C399E004A9D3C /* xcode-extensions */ = {
+			isa = PBXGroup;
+			children = (
+				8CEB067C1BFADD0F00ED4438 /* MCDVTTextStorage.h */,
+				8CEB067D1BFADD0F00ED4438 /* MCDVTTextStorage.m */,
+				43A0EFAB1C3C448F00F54B51 /* NSSearchField+MCLog.h */,
+				43A0EFAC1C3C448F00F54B51 /* NSSearchField+MCLog.m */,
+				43A0EFAE1C3C459100F54B51 /* MCIDEConsoleItem.h */,
+				43A0EFAF1C3C459100F54B51 /* MCIDEConsoleItem.m */,
+				43A0EFB11C3C46CF00F54B51 /* MCLogIDEConsoleArea.h */,
+				43A0EFB21C3C46CF00F54B51 /* MCLogIDEConsoleArea.m */,
+				43A0EFB41C3CB0AA00F54B51 /* MCIDEConsoleAdaptor.h */,
+				43A0EFB51C3CB0AA00F54B51 /* MCIDEConsoleAdaptor.m */,
+			);
+			name = "xcode-extensions";
+			sourceTree = "<group>";
+		};
+		43BEF0451C3C39DD004A9D3C /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				436980221C3C34A200BB7702 /* HHTimer.h */,
+				436980231C3C34A200BB7702 /* HHTimer.m */,
+				43BEF0461C3C3A31004A9D3C /* MCOrderedMap.h */,
+				43BEF0471C3C3A31004A9D3C /* MCOrderedMap.m */,
+				43A0EFB71C3CB2C800F54B51 /* Utils.h */,
+				43A0EFB81C3CB2C800F54B51 /* Utils.m */,
+				43A0EFCA1C3CBC4100F54B51 /* MethodSwizzle.h */,
+				43A0EFCB1C3CBC4100F54B51 /* MethodSwizzle.m */,
+				43A0EFCD1C3CC82900F54B51 /* NSView+MCLog.h */,
+				43A0EFCE1C3CC82900F54B51 /* NSView+MCLog.m */,
+			);
+			name = Utils;
+			sourceTree = "<group>";
+		};
 		43C269FE1A9D774E00BE9280 /* MCLogIOS_Demo */ = {
 			isa = PBXGroup;
 			children = (
@@ -152,12 +213,12 @@
 		8CBAF63D198B88C70067171A /* MCLog */ = {
 			isa = PBXGroup;
 			children = (
-				8CBAF63E198B88C70067171A /* Supporting Files */,
+				43BEF0451C3C39DD004A9D3C /* Utils */,
+				43BEF0441C3C399E004A9D3C /* xcode-extensions */,
 				8CBAF649198B88DD0067171A /* MCLog.h */,
 				8CBAF64A198B88DD0067171A /* MCLog.m */,
-				8CEB067C1BFADD0F00ED4438 /* MCDVTTextStorage.h */,
-				8CEB067D1BFADD0F00ED4438 /* MCDVTTextStorage.m */,
 				8CEB067B1BFADA1700ED4438 /* MCXcodeHeaders.h */,
+				8CBAF63E198B88C70067171A /* Supporting Files */,
 			);
 			path = MCLog;
 			sourceTree = "<group>";
@@ -316,8 +377,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				43A0EFB91C3CB2C800F54B51 /* Utils.m in Sources */,
+				43A0EFB61C3CB0AB00F54B51 /* MCIDEConsoleAdaptor.m in Sources */,
+				436980241C3C34A200BB7702 /* HHTimer.m in Sources */,
+				43BEF0481C3C3A31004A9D3C /* MCOrderedMap.m in Sources */,
+				43A0EFAD1C3C449000F54B51 /* NSSearchField+MCLog.m in Sources */,
+				43A0EFCF1C3CC82900F54B51 /* NSView+MCLog.m in Sources */,
+				43A0EFCC1C3CBC4100F54B51 /* MethodSwizzle.m in Sources */,
 				8CBAF64B198B88DD0067171A /* MCLog.m in Sources */,
+				43A0EFB31C3C46CF00F54B51 /* MCLogIDEConsoleArea.m in Sources */,
 				8CEB067E1BFADD0F00ED4438 /* MCDVTTextStorage.m in Sources */,
+				43A0EFB01C3C459100F54B51 /* MCIDEConsoleItem.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

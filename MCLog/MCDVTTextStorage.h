@@ -8,13 +8,14 @@
 
 #import "MCXcodeHeaders.h"
 
-@interface NSTextStorage (MCDVTTextStorage)
+@interface NSTextStorage(MCDVTTextStorage)
 
 - (void)mc_fixAttributesInRange:(NSRange)range;
 - (void)updateAttributes:(NSMutableDictionary *)attrs withANSIESCString:(NSString *)ansiEscString;
 
 - (void)setLastAttribute:(NSDictionary *)attribute;
 - (NSDictionary *)lastAttribute;
+
 - (void)setConsoleStorage:(BOOL)consoleStorage;
 - (BOOL)consoleStorage;
 

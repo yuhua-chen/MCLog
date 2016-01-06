@@ -35,27 +35,31 @@
     [super viewDidAppear:animated];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        for (NSUInteger count = 0; count < 50000; ++count) {
-//            if (count % 1000 == 0) {
-//                [NSThread sleepForTimeInterval:0.1];
-//            }
-            NSUInteger random = arc4random() % 4;
-            NSUInteger randomStringLen = arc4random() % 200;
-            NSMutableString *randomString = [NSMutableString stringWithCapacity:randomStringLen];
-            for (NSUInteger i = 0; i < randomStringLen; ++i) {
-                [randomString appendFormat:@"%02X", arc4random() % 256];
-            }
-            if (random == 0) {
-                ALLogVerbose(@"***[%tu]***:If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.%@", count, randomString);
-            } else if (random == 1) {
-                ALLogInfo(@"***[%tu]***:Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.%@", count, randomString);
-            } else if (random == 2) {
-                ALLogWarn(@"***[%tu]***:If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.%@", count, randomString);
-            } else if (random == 3) {
-                ALLogError(@"***[%tu]***:Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.%@", count, randomString);
-            }
-        }
+        [self logTest];
     });
+}
+
+- (void)logTest {
+    for (NSUInteger count = 0; count < 50000; ++count) {
+        if (count % 1000 == 0) {
+            [NSThread sleepForTimeInterval:0.1];
+        }
+        NSUInteger random = arc4random() % 4;
+        NSUInteger randomStringLen = arc4random() % 200;
+        NSMutableString *randomString = [NSMutableString stringWithCapacity:randomStringLen];
+        for (NSUInteger i = 0; i < randomStringLen; ++i) {
+            [randomString appendFormat:@"%02X", arc4random() % 256];
+        }
+        if (random == 0) {
+            ALLogVerbose(@"***[%tu]***:If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.%@", count, randomString);
+        } else if (random == 1) {
+            ALLogInfo(@"***[%tu]***:Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.%@", count, randomString);
+        } else if (random == 2) {
+            ALLogWarn(@"***[%tu]***:If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.%@", count, randomString);
+        } else if (random == 3) {
+            ALLogError(@"***[%tu]***:Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.%@", count, randomString);
+        }
+    }
 }
 
 @end
