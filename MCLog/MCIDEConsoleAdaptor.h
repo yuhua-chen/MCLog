@@ -15,12 +15,3 @@
 
 @end
 
-
-@interface NSObject (MCIDEConsoleAdaptor)
-
-@property(nonatomic, strong) HHTimer      *timer;
-@property(nonatomic, copy)   NSDictionary *unprocessedOutputInfo;
-
-- (void)mc_outputUnprocessedBuffer;
-
-@end

@@ -11,3 +11,6 @@
 
 @interface DVTTextStorage : NSTextStorage
 @end
+
+@interface IDEConsoleTextView : NSTextView
+@end

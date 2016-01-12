@@ -10,13 +10,9 @@
 
 @interface NSTextStorage(MCDVTTextStorage)
 
+@property(nonatomic, strong)                  NSDictionary *currentAttributes;
+@property(nonatomic, getter=isConsoleStorage) BOOL          consoleStorage;
+
 - (void)mc_fixAttributesInRange:(NSRange)range;
-- (void)updateAttributes:(NSMutableDictionary *)attrs withANSIESCString:(NSString *)ansiEscString;
-
-- (void)setLastAttribute:(NSDictionary *)attribute;
-- (NSDictionary *)lastAttribute;
-
-- (void)setConsoleStorage:(BOOL)consoleStorage;
-- (BOOL)consoleStorage;
 
 @end

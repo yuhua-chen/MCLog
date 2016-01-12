@@ -18,10 +18,9 @@ typedef NS_ENUM(NSUInteger, MCLogLevel) {
 
 @interface NSObject (MCIDEConsoleItem)
 
-- (void)setLogLevel:(NSUInteger)loglevel;
-- (NSUInteger)logLevel;
+@property(nonatomic) NSUInteger          logLevel;
+//@property(nonatomic) NSAttributedString *attributeString;
 
-- (void)updateItemAttribute:(id)item;
 @end
 
 

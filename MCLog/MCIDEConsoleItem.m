@@ -9,27 +9,64 @@
 #import "MCIDEConsoleItem.h"
 #import "Utils.h"
 #import "MethodSwizzle.h"
+#import "PluginConfigs.h"
 #import <objc/runtime.h>
 
-static const void *LogLevelAssociateKey;
+
+
+static inline void updateItemAttribute(id item);
+
+static const void *kLogLevelAssociateKey;
 @implementation NSObject (MCIDEConsoleItem)
 
-- (void)setLogLevel:(NSUInteger)loglevel
-{
-    objc_setAssociatedObject(self, &LogLevelAssociateKey, @(loglevel), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setLogLevel:(NSUInteger)loglevel {
+    objc_setAssociatedObject(self, &kLogLevelAssociateKey, @(loglevel), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (NSUInteger)logLevel
-{
-    return [objc_getAssociatedObject(self, &LogLevelAssociateKey) unsignedIntegerValue];
+- (NSUInteger)logLevel {
+    return [objc_getAssociatedObject(self, &kLogLevelAssociateKey) unsignedIntegerValue];
 }
 
+@end
 
 
-- (void)updateItemAttribute:(id)item
+
+@implementation MCIDEConsoleItem
+
++ (void)load {
+    Class clazz = NSClassFromString(@"IDEConsoleItem");
+    SEL selector = @selector(initWithAdaptorType:content:kind:);
+    IMP hookIMP = class_getMethodImplementation([MCIDEConsoleItem class], selector);
+    
+    [MethodSwizzleHelper swizzleMethodForClass:clazz
+                                      selector:selector
+                                replacementIMP:hookIMP
+                                 isClassMethod:NO];
+}
+
+- (id)initWithAdaptorType:(id)arg1 content:(id)arg2 kind:(int)arg3
 {
-    NSError *error = nil;
+    static IMP IDEConsoleItemInitIMP = nil;
+    if (IDEConsoleItemInitIMP == nil) {
+        Class clazz = NSClassFromString(@"IDEConsoleItem");
+        SEL selector = @selector(initWithAdaptorType:content:kind:);
+        IDEConsoleItemInitIMP = [MethodSwizzleHelper originalIMPForClass:clazz selector:selector];
+    }
+    
+    id item = IDEConsoleItemInitIMP(self, _cmd, arg1, arg2, arg3);
+    updateItemAttribute(item);
+    return item;
+}
+
+@end
+
+
+static inline void updateItemAttribute(id item) {
     NSString *logText = [item valueForKey:@"content"];
+    if (!logText) {
+        return;
+    }
+    
     if ([[item valueForKey:@"error"] boolValue]) {
         logText = [NSString stringWithFormat:(LC_ESC @"[31m%@" LC_RESET), logText];
         [item setValue:logText forKey:@"content"];
@@ -39,26 +76,28 @@ static const void *LogLevelAssociateKey;
     if (![[item valueForKey:@"output"] boolValue] || [[item valueForKey:@"outputRequestedByUser"] boolValue]) {
         return;
     }
-    
-    if (!logText) {
-        return;
+
+    static NSRegularExpression *prefixRegex = nil;
+    if (prefixRegex == nil) {
+        prefixRegex = logItemPrefixPattern();
     }
-    
-    NSRange prefixRange = [logItemPrefixPattern() rangeOfFirstMatchInString:logText options:0 range:NSMakeRange(0, logText.length)];
+    NSRange prefixRange =
+        [prefixRegex rangeOfFirstMatchInString:logText options:0 range:NSMakeRange(0, logText.length)];
     if (prefixRange.location != 0 || logText.length <= prefixRange.length) {
         return;
     }
-    
-    static NSRegularExpression *ControlCharsPattern = nil;
-    if (ControlCharsPattern == nil) {
-        ControlCharsPattern = [NSRegularExpression regularExpressionWithPattern:LC_ESC@"\\[[\\d;]+m" options:0 error:&error];
-        if (!ControlCharsPattern) {
-            MCLogger(@"%@", error);
-        }
+
+    static NSRegularExpression *escRegex = nil;
+    if (escRegex == nil) {
+        escRegex = escCharPattern();
     }
-    NSString *content = [logText substringFromIndex:prefixRange.length];
-    NSString *originalContent = [ControlCharsPattern stringByReplacingMatchesInString:content options:0 range:NSMakeRange(0, content.length) withTemplate:@""];
-    
+
+    NSString *content         = [logText substringFromIndex:prefixRange.length];
+    NSString *originalContent = [escRegex stringByReplacingMatchesInString:content
+                                                                   options:0
+                                                                     range:NSMakeRange(0, content.length)
+                                                              withTemplate:@""];
+
     if ([originalContent hasPrefix:@"-[VERBOSE]"]) {
         [item setLogLevel:MCLogLevelVerbose];
         content = [NSString stringWithFormat:(LC_ESC @"[34m%@" LC_RESET), content];
@@ -75,54 +114,26 @@ static const void *LogLevelAssociateKey;
         [item setLogLevel:MCLogLevelError];
         content = [NSString stringWithFormat:(LC_ESC @"[31m%@" LC_RESET), content];
     } else {
-        static NSMutableArray *extraErrorPatterns = nil;
-        if (extraErrorPatterns == nil) {
-            extraErrorPatterns = [NSMutableArray array];
-            for (NSString *patternStr in @[
-                                           @"^\\s*\\*\\*\\* Terminating app due to uncaught exception '.+', reason: '[\\s\\S]+'\\n*\\*\\*\\* First throw call stack:\\s*\\n",
-                                           @"^\\s*(\\+|-)\\[[a-zA-Z_]\\w*\\s[a-zA-Z_]\\w*[(:([a-zA-Z_]\\w*)?)]*\\]: unrecognized selector sent to (class|instance) [\\dxXa-fA-F]+",
-                                           @"^\\s*\\*\\*\\* Assertion failure in (\\+|-)\\[[a-zA-Z_]\\w*\\s[a-zA-Z_]\\w*[(:([a-zA-Z_]\\w*)?)]*\\],",
-                                           @"^\\s*\\*\\*\\* Terminating app due to uncaught exception of class '[a-zA-Z_]\\w+'"
-                                           ]) {
-                NSRegularExpression *r = [NSRegularExpression regularExpressionWithPattern:patternStr options:0 error:&error];
-                if (!r) {
-                    MCLogger(@"ERROR:%@", error);
-                    continue;
-                }
-                [extraErrorPatterns addObject:r];
+        static NSRegularExpression *kCommonErrorLogPatterh;
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            NSString *pattern =
+            @"\\s*\\*\\*\\* Terminating app due to uncaught exception '.+', reason: '[\\s\\S]+'\\n*\\*\\*\\* First throw call stack:\\s*\\n|"
+            @"\\s*(\\+|-)\\[[a-zA-Z_]\\w*\\s[a-zA-Z_]\\w*[(:([a-zA-Z_]\\w*)?)]*\\]: unrecognized selector sent to (class|instance) [\\dxXa-fA-F]+|"
+            @"\\s*\\*\\*\\* Assertion failure in (\\+|-)\\[[a-zA-Z_]\\w*\\s[a-zA-Z_]\\w*[(:([a-zA-Z_]\\w*)?)]*\\],|"
+            @"\\s*\\*\\*\\* Terminating app due to uncaught exception of class '[a-zA-Z_]\\w+'";
+            NSError *error = nil;
+            kCommonErrorLogPatterh = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:&error];
+            if (kCommonErrorLogPatterh == nil) {
+                MCLogger(@"ERROR:%@", error);
             }
-        }
-        for (NSRegularExpression *r in extraErrorPatterns) {
-            if ([r matchesInString:originalContent options:0 range:NSMakeRange(0, originalContent.length)].count > 0) {
-                content = [NSString stringWithFormat:(LC_ESC @"[31m%@" LC_RESET), content];
-                break;
-            }
+        });
+        if ([kCommonErrorLogPatterh matchesInString:originalContent options:0 range:NSMakeRange(0, originalContent.length)].count > 0) {
+            content = [NSString stringWithFormat:(LC_ESC @"[31m%@" LC_RESET), content];
         }
     }
-    
+    content = [content stringByReplacingOccurrencesOfString:(@"\n" LC_RESET) withString:(LC_RESET @"\n")];
     [item setValue:[[logText substringWithRange:prefixRange] stringByAppendingString:content] forKey:@"content"];
 }
 
-@end
 
-
-
-@implementation MCIDEConsoleItem
-
-- (id)initWithAdaptorType:(id)arg1 content:(id)arg2 kind:(int)arg3
-{
-    static IMP IDEConsoleItemInitIMP = nil;
-    if (IDEConsoleItemInitIMP == nil) {
-        Class clazz = NSClassFromString(@"IDEConsoleItem");
-        SEL selector = @selector(initWithAdaptorType:content:kind:);
-        IDEConsoleItemInitIMP = [MethodSwizzleHelper originalIMPForClass:clazz selector:selector];
-    }
-    
-    id item = IDEConsoleItemInitIMP(self, _cmd, arg1, arg2, arg3);
-    [self updateItemAttribute:item];
-    //MCLogger(@"%@, logLevel:%zd, adaptorType:%@", item, [item logLevel], [item valueForKey:@"adaptorType"]);
-    return item;
-}
-
-
-@end

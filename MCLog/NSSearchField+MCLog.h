@@ -11,8 +11,8 @@
 @class MCLogIDEConsoleArea;
 @interface NSSearchField (MCLog)
 
-@property (nonatomic, strong) MCLogIDEConsoleArea *consoleArea;
-@property (nonatomic, strong) NSTextView          *consoleTextView;
+@property (nonatomic, weak) MCLogIDEConsoleArea *consoleArea;
+@property (nonatomic, weak) NSTextView          *consoleTextView;
 
 @end
 

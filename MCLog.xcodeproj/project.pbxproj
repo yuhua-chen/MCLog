@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		436253401C413D030091D39D /* ALAssociatedWeakObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 4362533F1C413D030091D39D /* ALAssociatedWeakObject.m */; };
 		436980241C3C34A200BB7702 /* HHTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = 436980231C3C34A200BB7702 /* HHTimer.m */; };
+		438950261C3E6E0A00B34D24 /* PluginConfigs.m in Sources */ = {isa = PBXBuildFile; fileRef = 438950251C3E6E0A00B34D24 /* PluginConfigs.m */; };
 		43A0EFAD1C3C449000F54B51 /* NSSearchField+MCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFAC1C3C448F00F54B51 /* NSSearchField+MCLog.m */; };
 		43A0EFB01C3C459100F54B51 /* MCIDEConsoleItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFAF1C3C459100F54B51 /* MCIDEConsoleItem.m */; };
 		43A0EFB31C3C46CF00F54B51 /* MCLogIDEConsoleArea.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFB21C3C46CF00F54B51 /* MCLogIDEConsoleArea.m */; };
@@ -22,6 +24,7 @@
 		43C26A0A1A9D774E00BE9280 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 43C26A081A9D774E00BE9280 /* LaunchScreen.xib */; };
 		43C26A161A9D774E00BE9280 /* MCLogIOS_DemoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C26A151A9D774E00BE9280 /* MCLogIOS_DemoTests.m */; };
 		43C26A1F1A9D77B500BE9280 /* TestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C26A1E1A9D77B500BE9280 /* TestViewController.m */; };
+		43F368CA1C3FF7710083F0BC /* MCIDEConsoleTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 43F368C91C3FF7710083F0BC /* MCIDEConsoleTextView.m */; };
 		8CBAF63C198B88C70067171A /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8CBAF63B198B88C70067171A /* CoreFoundation.framework */; };
 		8CBAF642198B88C70067171A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8CBAF640198B88C70067171A /* InfoPlist.strings */; };
 		8CBAF64B198B88DD0067171A /* MCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 8CBAF64A198B88DD0067171A /* MCLog.m */; };
@@ -39,8 +42,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4362533E1C413D030091D39D /* ALAssociatedWeakObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ALAssociatedWeakObject.h; sourceTree = "<group>"; };
+		4362533F1C413D030091D39D /* ALAssociatedWeakObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ALAssociatedWeakObject.m; sourceTree = "<group>"; };
 		436980221C3C34A200BB7702 /* HHTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HHTimer.h; sourceTree = "<group>"; };
 		436980231C3C34A200BB7702 /* HHTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HHTimer.m; sourceTree = "<group>"; };
+		438950241C3E6E0A00B34D24 /* PluginConfigs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginConfigs.h; sourceTree = "<group>"; };
+		438950251C3E6E0A00B34D24 /* PluginConfigs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PluginConfigs.m; sourceTree = "<group>"; };
 		43A0EFAB1C3C448F00F54B51 /* NSSearchField+MCLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSSearchField+MCLog.h"; sourceTree = "<group>"; };
 		43A0EFAC1C3C448F00F54B51 /* NSSearchField+MCLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSSearchField+MCLog.m"; sourceTree = "<group>"; };
 		43A0EFAE1C3C459100F54B51 /* MCIDEConsoleItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCIDEConsoleItem.h; sourceTree = "<group>"; };
@@ -69,6 +76,8 @@
 		43C26A151A9D774E00BE9280 /* MCLogIOS_DemoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MCLogIOS_DemoTests.m; sourceTree = "<group>"; };
 		43C26A1D1A9D77B500BE9280 /* TestViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestViewController.h; sourceTree = "<group>"; };
 		43C26A1E1A9D77B500BE9280 /* TestViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestViewController.m; sourceTree = "<group>"; };
+		43F368C81C3FF7710083F0BC /* MCIDEConsoleTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCIDEConsoleTextView.h; sourceTree = "<group>"; };
+		43F368C91C3FF7710083F0BC /* MCIDEConsoleTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCIDEConsoleTextView.m; sourceTree = "<group>"; };
 		8CBAF638198B88C70067171A /* MCLog.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MCLog.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8CBAF63B198B88C70067171A /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		8CBAF63F198B88C70067171A /* MCLog-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MCLog-Info.plist"; sourceTree = "<group>"; };
@@ -120,6 +129,8 @@
 				43A0EFB21C3C46CF00F54B51 /* MCLogIDEConsoleArea.m */,
 				43A0EFB41C3CB0AA00F54B51 /* MCIDEConsoleAdaptor.h */,
 				43A0EFB51C3CB0AA00F54B51 /* MCIDEConsoleAdaptor.m */,
+				43F368C81C3FF7710083F0BC /* MCIDEConsoleTextView.h */,
+				43F368C91C3FF7710083F0BC /* MCIDEConsoleTextView.m */,
 			);
 			name = "xcode-extensions";
 			sourceTree = "<group>";
@@ -137,6 +148,8 @@
 				43A0EFCB1C3CBC4100F54B51 /* MethodSwizzle.m */,
 				43A0EFCD1C3CC82900F54B51 /* NSView+MCLog.h */,
 				43A0EFCE1C3CC82900F54B51 /* NSView+MCLog.m */,
+				4362533E1C413D030091D39D /* ALAssociatedWeakObject.h */,
+				4362533F1C413D030091D39D /* ALAssociatedWeakObject.m */,
 			);
 			name = Utils;
 			sourceTree = "<group>";
@@ -219,6 +232,8 @@
 				8CBAF64A198B88DD0067171A /* MCLog.m */,
 				8CEB067B1BFADA1700ED4438 /* MCXcodeHeaders.h */,
 				8CBAF63E198B88C70067171A /* Supporting Files */,
+				438950241C3E6E0A00B34D24 /* PluginConfigs.h */,
+				438950251C3E6E0A00B34D24 /* PluginConfigs.m */,
 			);
 			path = MCLog;
 			sourceTree = "<group>";
@@ -294,7 +309,7 @@
 		8CBAF630198B88C70067171A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0720;
 				ORGANIZATIONNAME = "Yuhua Chen";
 				TargetAttributes = {
 					43C269FC1A9D774E00BE9280 = {
@@ -379,6 +394,7 @@
 			files = (
 				43A0EFB91C3CB2C800F54B51 /* Utils.m in Sources */,
 				43A0EFB61C3CB0AB00F54B51 /* MCIDEConsoleAdaptor.m in Sources */,
+				438950261C3E6E0A00B34D24 /* PluginConfigs.m in Sources */,
 				436980241C3C34A200BB7702 /* HHTimer.m in Sources */,
 				43BEF0481C3C3A31004A9D3C /* MCOrderedMap.m in Sources */,
 				43A0EFAD1C3C449000F54B51 /* NSSearchField+MCLog.m in Sources */,
@@ -387,6 +403,8 @@
 				8CBAF64B198B88DD0067171A /* MCLog.m in Sources */,
 				43A0EFB31C3C46CF00F54B51 /* MCLogIDEConsoleArea.m in Sources */,
 				8CEB067E1BFADD0F00ED4438 /* MCDVTTextStorage.m in Sources */,
+				436253401C413D030091D39D /* ALAssociatedWeakObject.m in Sources */,
+				43F368CA1C3FF7710083F0BC /* MCIDEConsoleTextView.m in Sources */,
 				43A0EFB01C3C459100F54B51 /* MCIDEConsoleItem.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -436,6 +454,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.alexlee002.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -453,6 +472,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.alexlee002.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -479,6 +499,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.alexlee002.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MCLogIOS_Demo.app/MCLogIOS_Demo";
@@ -500,6 +521,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.alexlee002.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MCLogIOS_Demo.app/MCLogIOS_Demo";
@@ -524,6 +546,7 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -587,6 +610,7 @@
 				GCC_PREFIX_HEADER = "MCLog/MCLog-Prefix.pch";
 				INFOPLIST_FILE = "MCLog/MCLog-Info.plist";
 				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.michaelchen.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xcplugin;
 			};
@@ -602,6 +626,7 @@
 				GCC_PREFIX_HEADER = "MCLog/MCLog-Prefix.pch";
 				INFOPLIST_FILE = "MCLog/MCLog-Info.plist";
 				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.michaelchen.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xcplugin;
 			};

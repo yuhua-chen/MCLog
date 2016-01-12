@@ -8,6 +8,7 @@
 
 #include <execinfo.h>
 #import <objc/runtime.h>
+#import <objc/message.h>
 #import "HHTimer.h"
 #import "MCDVTTextStorage.h"
 #import "MCLog.h"
@@ -17,83 +18,13 @@
 #import "MCIDEConsoleItem.h"
 #import "NSSearchField+MCLog.h"
 #import "Utils.h"
-#import "MCLogIDEConsoleArea.h"
-#import "MCIDEConsoleAdaptor.h"
-#import "MCDVTTextStorage.h"
 #import "MethodSwizzle.h"
+#import "MCLogIDEConsoleArea.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 
 #pragma mark - method swizzle
-
-void hookIDEConsoleArea() {
-    Class clazz = NSClassFromString(@"IDEConsoleArea");
-    IMP hookedShouldAppendItemIMP = class_getMethodImplementation([MCLogIDEConsoleArea class],
-                                                                  @selector(_shouldAppendItem:));
-    
-    [MethodSwizzleHelper swizzleMethodForClass:clazz
-                                      selector:@selector(_shouldAppendItem:)
-                                replacementIMP:hookedShouldAppendItemIMP
-                                 isClassMethod:NO];
-    
-    IMP hookClearTextIMP = class_getMethodImplementation([MCLogIDEConsoleArea class], @selector(_clearText));
-    [MethodSwizzleHelper swizzleMethodForClass:clazz
-                                      selector:@selector(_clearText)
-                                replacementIMP:hookClearTextIMP
-                                 isClassMethod:NO];
-}
-
-void hookIDEConsoleItem()
-{
-    Class clazz = NSClassFromString(@"IDEConsoleItem");
-    SEL selector = @selector(initWithAdaptorType:content:kind:);
-    IMP hookIMP = class_getMethodImplementation([MCIDEConsoleItem class], selector);
-    
-    [MethodSwizzleHelper swizzleMethodForClass:clazz
-                                      selector:selector
-                                replacementIMP:hookIMP
-                                 isClassMethod:NO];
-}
-
-//void hookDVTTextStorage()
-//{
-//    Class DVTTextStorage = NSClassFromString(@"DVTTextStorage");
-//    IMP hookIMP = class_getMethodImplementation([MCDVTTextStorage class], @selector(fixAttributesInRange:));
-//    
-//    [MethodSwizzleHelper swizzleMethodForClass:DVTTextStorage
-//                                      selector:@selector(fixAttributesInRange:)
-//                                replacementIMP:hookIMP
-//                                 isClassMethod:NO];
-//}
-
-void swizzleDVTTextStorage() {
-    Class DVTTextStorage                = NSClassFromString(@"DVTTextStorage");
-    Method fixAttributesInRange         = class_getInstanceMethod(DVTTextStorage, @selector(fixAttributesInRange:));
-    Method swizzledFixAttributesInRange = class_getInstanceMethod(DVTTextStorage, @selector(mc_fixAttributesInRange:));
-
-    BOOL didAddMethod = class_addMethod(DVTTextStorage, @selector(fixAttributesInRange:),
-                                        method_getImplementation(swizzledFixAttributesInRange),
-                                        method_getTypeEncoding(swizzledFixAttributesInRange));
-    if (didAddMethod) {
-        class_replaceMethod(DVTTextStorage, @selector(mc_fixAttributesInRange:),
-                            method_getImplementation(fixAttributesInRange),
-                            method_getTypeEncoding(swizzledFixAttributesInRange));
-    } else {
-        method_exchangeImplementations(fixAttributesInRange, swizzledFixAttributesInRange);
-    }
-}
-
-void hookIDEConsoleAdaptor()
-{
-    Class clazz = NSClassFromString(@"IDEConsoleAdaptor");
-    SEL selector = @selector(outputForStandardOutput:isPrompt:isOutputRequestedByUser:);
-    IMP hookIMP = class_getMethodImplementation([MCIDEConsoleAdaptor class], selector);
-    [MethodSwizzleHelper swizzleMethodForClass:clazz
-                                      selector:selector
-                                replacementIMP:hookIMP
-                                 isClassMethod:NO];
-}
 
 
 @implementation MCLog
@@ -105,13 +36,6 @@ void hookIDEConsoleAdaptor()
         // alreay installed plugin
         return;
     }
-
-    //hookDVTTextStorage();
-    swizzleDVTTextStorage();
-    hookIDEConsoleAdaptor();
-    hookIDEConsoleArea();
-    hookIDEConsoleItem();
-    
     setenv(MCLOG_FLAG, "YES", 0);
 }
 
@@ -197,7 +121,7 @@ void hookIDEConsoleAdaptor()
             break;
         }
     }
-    MCLogger(@"filterButton: %@", filterButton);
+
     if (filterButton) {
         [self filterPopupButton:filterButton addItemWithTitle:@"Verbose" tag:MCLogLevelVerbose];
         [self filterPopupButton:filterButton addItemWithTitle:@"Info" tag:MCLogLevelInfo];
@@ -274,16 +198,22 @@ void hookIDEConsoleAdaptor()
 
     NSString *cachedKey = hash(consoleArea);
     if (cachedKey) {
-        NSArray *sortedItems = [[self.class consoleItemsMap][cachedKey] orderedItems];
-
-        if ([consoleArea respondsToSelector:@selector(_appendItems:)]) {
-            [consoleArea performSelector:@selector(_appendItems:) withObject:sortedItems];
+        static SEL selector = nil;
+        static NSNumber *canResponse = nil;
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            selector = @selector(_appendItems:);
+            canResponse = @([consoleArea respondsToSelector:selector]);
+        });
+        if (canResponse) {
+            NSArray *sortedItems = [[self.class consoleItemsMap][cachedKey] orderedItems];
+            objc_msgSend(consoleArea, selector, sortedItems);
         }
-
-        [[self.class filterPatternsMap] removeObjectForKey:cachedKey];
     }
 #pragma clang diagnostic pop
+    [[self.class filterPatternsMap] removeObjectForKey:hash(consoleArea)];
 }
+
 
 - (void)activate:(NSNotification *)notification {
     [self addCustomViews];

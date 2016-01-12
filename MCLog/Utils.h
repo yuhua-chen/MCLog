@@ -8,7 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-NSRegularExpression * logItemPrefixPattern();
+NSRegularExpression *logItemPrefixPattern();
+NSRegularExpression *escCharPattern();
+
 NSSearchField *getSearchField(id consoleArea);
 
 NSArray<NSString *> *backtraceStack();

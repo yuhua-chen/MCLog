@@ -14,10 +14,23 @@ NSRegularExpression * logItemPrefixPattern() {
     if (pattern == nil) {
         NSError *error = nil;
         pattern = [NSRegularExpression
-                   regularExpressionWithPattern:@"\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}[\\.:]\\d{3}"
+                   regularExpressionWithPattern:@"\\n?\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}[\\.:]\\d{3}"
                    @"\\s+.+\\[[\\da-fA-F]+:[\\da-fA-F]+\\]\\s+"
                    options:NSRegularExpressionCaseInsensitive
                    error:&error];
+        if (!pattern) {
+            MCLogger(@"%@", error);
+        }
+    }
+    return pattern;
+}
+
+NSRegularExpression *escCharPattern() {
+    static NSRegularExpression *pattern = nil;
+    if (pattern == nil) {
+        NSError *error = nil;
+        pattern =
+        [NSRegularExpression regularExpressionWithPattern:(LC_ESC @"\\[([\\d+;]+)m") options:0 error:&error];
         if (!pattern) {
             MCLogger(@"%@", error);
         }
@@ -57,7 +70,6 @@ NSArray<NSString *> *backtraceStack() {
     
     return backtrace;
 }
-
 
 NSString *hash(id obj) {
     if (!obj) {

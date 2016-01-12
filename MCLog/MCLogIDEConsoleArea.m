@@ -13,9 +13,29 @@
 #import "MCLog.h"
 #import "MCIDEConsoleItem.h"
 #import "MethodSwizzle.h"
+#import <objc/runtime.h>
+
+
 
 
 @implementation MCLogIDEConsoleArea
+
++ (void)load {
+    Class clazz = NSClassFromString(@"IDEConsoleArea");
+    IMP hookedShouldAppendItemIMP = class_getMethodImplementation([MCLogIDEConsoleArea class],
+                                                                  @selector(_shouldAppendItem:));
+    
+    [MethodSwizzleHelper swizzleMethodForClass:clazz
+                                      selector:@selector(_shouldAppendItem:)
+                                replacementIMP:hookedShouldAppendItemIMP
+                                 isClassMethod:NO];
+    
+    IMP hookClearTextIMP = class_getMethodImplementation([MCLogIDEConsoleArea class], @selector(_clearText));
+    [MethodSwizzleHelper swizzleMethodForClass:clazz
+                                      selector:@selector(_clearText)
+                                replacementIMP:hookClearTextIMP
+                                 isClassMethod:NO];
+}
 
 - (BOOL)_shouldAppendItem:(id)obj;
 {
@@ -28,6 +48,9 @@
     
     
     NSSearchField *searchField = getSearchField(self);
+    if (searchField == nil) {
+        return YES;
+    }
     if (!searchField.consoleArea) {
         searchField.consoleArea = self;
     }
@@ -39,7 +62,9 @@
     if (!originConsoleItems) {
         originConsoleItems = [[MCOrderedMap alloc] init];
         originConsoleItems.maximumnItemsCount = 65535;
+        consoleItemsMap[consoleItemsKey] = originConsoleItems;
     }
+    [originConsoleItems addObject:obj forKey:@([obj timestamp])];
 
     BOOL isInputItem           = [[obj valueForKey:@"input"] boolValue];
     BOOL isPromptItem          = [[obj valueForKey:@"prompt"] boolValue];
@@ -56,27 +81,9 @@
     }
     
     if (!shouldShowLogLevel) {
-        if (searchField) {
-            // store all console items.
-            if (![originConsoleItems containsObjectForKey:@([obj timestamp])]) {
-                [originConsoleItems addObject:obj forKey:@([obj timestamp])];
-            }
-            consoleItemsMap[consoleItemsKey] = originConsoleItems;
-        }
         return NO;
     }
-    
-    if (!searchField) {
-        return YES;
-    }
-    
-    
-    // store all console items.
-    if (![originConsoleItems containsObjectForKey:@([obj timestamp])]) {
-        [originConsoleItems addObject:obj forKey:@([obj timestamp])];
-    }
-    consoleItemsMap[consoleItemsKey] = originConsoleItems;
-    
+
     if (searchField.stringValue.length == 0) {
         return YES;
     }
@@ -89,8 +96,8 @@
     content = [logRegex stringByReplacingMatchesInString:content options:(NSRegularExpressionCaseInsensitive | NSRegularExpressionDotMatchesLineSeparators) range:range withTemplate:@""];
 
     // Test with user's regex pattern
-    NSError *error;
     NSRegularExpression *regex = [MCLog filterPatternsMap][consoleItemsKey];
+    NSError *error;
     if (regex == nil || ![regex.pattern isEqualToString:searchField.stringValue]) {
         regex = [NSRegularExpression regularExpressionWithPattern:searchField.stringValue
                                                           options:(NSRegularExpressionCaseInsensitive |
