@@ -43,13 +43,8 @@
         originalIMP = [MethodSwizzleHelper originalIMPForClass:clazz selector:selector];
     }
     
-    
-    NSSearchField *searchField = getSearchField(self);
-    if (searchField == nil) {
-        return YES;
-    }
-    if (!searchField.consoleArea) {
-        searchField.consoleArea = (MCLogIDEConsoleArea *)self;
+    if (obj == nil) {
+        return [originalIMP(self, _cmd, obj) boolValue];
     }
     
     NSMutableDictionary *consoleItemsMap = [MCLog consoleItemsMap];
@@ -79,6 +74,14 @@
     
     if (!shouldShowLogLevel) {
         return NO;
+    }
+    
+    NSSearchField *searchField = getSearchField(self);
+    if (searchField == nil) {
+        return YES;
+    }
+    if (!searchField.consoleArea) {
+        searchField.consoleArea = (MCLogIDEConsoleArea *)self;
     }
     
     if (searchField.stringValue.length == 0) {

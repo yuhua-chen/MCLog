@@ -189,6 +189,21 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSTextView *consoleTextView      = searchField.consoleTextView;
     MCLogIDEConsoleArea *consoleArea = searchField.consoleArea;
+    NSString *cachedKey = hash(consoleArea);
+    if (cachedKey == nil) {
+        return;
+    }
+    
+    NSString *lastFilterText = nil;
+    id filterPattern = [self.class filterPatternsMap][cachedKey];
+    if ([filterPattern isKindOfClass:[NSRegularExpression class]]) {
+        lastFilterText = ((NSRegularExpression *) filterPattern).pattern;
+    }
+    lastFilterText = lastFilterText.length == 0 ? @"" : lastFilterText;
+    
+    if ([searchField.stringValue isEqualToString:lastFilterText]) {
+        return;
+    }
 
 // get rid of the annoying 'undeclared selector' warning
 #pragma clang diagnostic push
@@ -197,19 +212,16 @@ NS_ASSUME_NONNULL_BEGIN
         [consoleTextView performSelector:@selector(clearConsoleItems) withObject:nil];
     }
 
-    NSString *cachedKey = hash(consoleArea);
-    if (cachedKey) {
-        static SEL selector = nil;
-        static BOOL canResponse = NO;
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            selector = @selector(_appendItems:);
-            canResponse = [consoleArea respondsToSelector:selector];
-        });
-        if (canResponse) {
-            NSArray *sortedItems = [[self.class consoleItemsMap][cachedKey] orderedItems];
-            objc_msgSend(consoleArea, selector, sortedItems);
-        }
+    static SEL selector = nil;
+    static BOOL canResponse = NO;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        selector = @selector(_appendItems:);
+        canResponse = [consoleArea respondsToSelector:selector];
+    });
+    if (canResponse) {
+        NSArray *sortedItems = [[self.class consoleItemsMap][cachedKey] orderedItems];
+        objc_msgSend(consoleArea, selector, sortedItems);
     }
 #pragma clang diagnostic pop
 }
