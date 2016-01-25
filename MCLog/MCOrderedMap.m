@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSParameterAssert(key != nil && object != nil);
     @synchronized(self) {
         verifyMap();
-        [self removeHeadItems];
+        //[self removeHeadItems];
         NSUInteger keyIndex = [self.keys indexOfObject:key];
         if (keyIndex == NSNotFound) {
             [self.keys addObject:key];

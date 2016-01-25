@@ -16,8 +16,6 @@
 #import <objc/runtime.h>
 
 
-
-
 @implementation MCLogIDEConsoleArea
 
 + (void)load {
@@ -37,8 +35,7 @@
                                  isClassMethod:NO];
 }
 
-- (BOOL)_shouldAppendItem:(id)obj;
-{
+- (BOOL)_shouldAppendItem:(id)obj {
     static IMP originalIMP = nil;
     if (originalIMP == nil) {
         Class clazz = NSClassFromString(@"IDEConsoleArea");
@@ -52,7 +49,7 @@
         return YES;
     }
     if (!searchField.consoleArea) {
-        searchField.consoleArea = self;
+        searchField.consoleArea = (MCLogIDEConsoleArea *)self;
     }
     
     NSMutableDictionary *consoleItemsMap = [MCLog consoleItemsMap];
@@ -83,8 +80,9 @@
     if (!shouldShowLogLevel) {
         return NO;
     }
-
+    
     if (searchField.stringValue.length == 0) {
+        [[MCLog filterPatternsMap] removeObjectForKey:consoleItemsKey];
         return YES;
     }
     
@@ -93,8 +91,12 @@
     NSRange range = NSMakeRange(0, content.length);
     
     NSRegularExpression *logRegex = logItemPrefixPattern();
-    content = [logRegex stringByReplacingMatchesInString:content options:(NSRegularExpressionCaseInsensitive | NSRegularExpressionDotMatchesLineSeparators) range:range withTemplate:@""];
-
+    content = [logRegex stringByReplacingMatchesInString:content
+                                                 options:(NSRegularExpressionCaseInsensitive |
+                                                          NSRegularExpressionDotMatchesLineSeparators)
+                                                   range:range
+                                            withTemplate:@""];
+    
     // Test with user's regex pattern
     NSRegularExpression *regex = [MCLog filterPatternsMap][consoleItemsKey];
     NSError *error;
@@ -110,7 +112,7 @@
         }
         [MCLog filterPatternsMap][consoleItemsKey] = regex;
     }
-
+    
     range = NSMakeRange(0, content.length);
     NSArray *matches = [regex matchesInString:content options:0 range:range];
     if ([matches count] > 0 || isInputItem || isPromptItem || isoutputRequestByUser || isDebuggerAdaptor) {

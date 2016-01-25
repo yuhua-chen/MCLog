@@ -105,10 +105,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self addLogLevelButtonItemsAt:scopeBarView defaultLogLevel:[[consoleTextView valueForKey:@"logMode"] intValue]];
     [self addLogFilterPatternTextFieldAt:scopeBarView associateWith:consoleTextView];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(searchFieldDidEndEditing:)
-                                                 name:NSControlTextDidEndEditingNotification
-                                               object:nil];
 
     return YES;
 }
@@ -167,6 +163,11 @@ NS_ASSUME_NONNULL_BEGIN
     [searchField.cell setPlaceholderString:@"Regular Expression"];
     [scopeBarView addSubview:searchField];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(searchFieldDidEndEditing:)
+                                                 name:NSControlTextDidEndEditingNotification
+                                               object:nil];
+    
     return YES;
 }
 
@@ -199,11 +200,11 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *cachedKey = hash(consoleArea);
     if (cachedKey) {
         static SEL selector = nil;
-        static NSNumber *canResponse = nil;
+        static BOOL canResponse = NO;
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
             selector = @selector(_appendItems:);
-            canResponse = @([consoleArea respondsToSelector:selector]);
+            canResponse = [consoleArea respondsToSelector:selector];
         });
         if (canResponse) {
             NSArray *sortedItems = [[self.class consoleItemsMap][cachedKey] orderedItems];
@@ -211,7 +212,6 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 #pragma clang diagnostic pop
-    [[self.class filterPatternsMap] removeObjectForKey:hash(consoleArea)];
 }
 
 

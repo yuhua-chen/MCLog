@@ -73,6 +73,7 @@ void swizzleDVTTextStorage() {
     NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
     if (self.currentAttributes.count > 0) {
         [attrs setValuesForKeysWithDictionary:self.currentAttributes];
+        self.currentAttributes = nil;
     }
 
     static NSRegularExpression *regex = nil;

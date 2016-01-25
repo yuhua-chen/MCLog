@@ -133,12 +133,12 @@ static dispatch_queue_t buffer_queue() {
 
     if (unprocessedString.length > 0) {
         [self setUnprocessedOutputInfo:@{
-            @"content" : unprocessedString,
+            @"content" :  unprocessedString,
             @"isPrompt" : @(arg2),
             @"isOutputRequestedByUser" : @(arg3)
         }];
 
-        self.timer = [HHTimer scheduledTimerWithTimeInterval:0.05
+        self.timer = [HHTimer scheduledTimerWithTimeInterval:0.05f
                                                dispatchQueue:buffer_queue()
                                                        block:^{
                                                            [self mc_outputUnprocessedBuffer];
