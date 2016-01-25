@@ -92,13 +92,20 @@ static dispatch_queue_t buffer_queue() {
 }
 
 - (void)outputForStandardOutput:(id)arg1 isPrompt:(BOOL)arg2 isOutputRequestedByUser:(BOOL)arg3 {
+    if (![arg1 isKindOfClass:[NSString class]]) { // nil is not allowed either
+        return;
+    }
+    
     [self.timer invalidate];
     self.timer = nil;
 
     NSRegularExpression *logSeperatorPattern = logItemPrefixPattern();
 
     NSString *unprocessedString = self.unprocessedOutputInfo[@"content"];
-    [self setUnprocessedOutputInfo:nil];
+    dispatch_async(buffer_queue(), ^{
+        [self setUnprocessedOutputInfo:nil];
+    });
+
 
     NSString *buffer = arg1;
     if (unprocessedString.length > 0) {
