@@ -20,6 +20,15 @@
 // Defaults
 
 #define MCLOG_FLAG "MCLOG_FLAG"
+
+// maybe we should use const value define
 #define kTagSearchField	99
 
 #define MCLogger(fmt, ...) NSLog((@"[MCLog] %s(Line:%d) " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
+
+#define stringify(obj)                              \
+        [(obj) isKindOfClass:[NSString class]]      \
+        ? (obj)                                     \
+        : [(obj) isKindOfClass:[NSNumber class]]    \
+            ? [(NSNumber *)(obj) stringValue]       \
+            : [(id)(obj) description]

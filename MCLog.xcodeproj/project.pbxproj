@@ -7,13 +7,77 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		436253401C413D030091D39D /* ALAssociatedWeakObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 4362533F1C413D030091D39D /* ALAssociatedWeakObject.m */; };
+		436980241C3C34A200BB7702 /* HHTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = 436980231C3C34A200BB7702 /* HHTimer.m */; };
+		438950261C3E6E0A00B34D24 /* PluginConfigs.m in Sources */ = {isa = PBXBuildFile; fileRef = 438950251C3E6E0A00B34D24 /* PluginConfigs.m */; };
+		43A0EFAD1C3C449000F54B51 /* NSSearchField+MCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFAC1C3C448F00F54B51 /* NSSearchField+MCLog.m */; };
+		43A0EFB01C3C459100F54B51 /* MCIDEConsoleItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFAF1C3C459100F54B51 /* MCIDEConsoleItem.m */; };
+		43A0EFB31C3C46CF00F54B51 /* MCLogIDEConsoleArea.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFB21C3C46CF00F54B51 /* MCLogIDEConsoleArea.m */; };
+		43A0EFB61C3CB0AB00F54B51 /* MCIDEConsoleAdaptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFB51C3CB0AA00F54B51 /* MCIDEConsoleAdaptor.m */; };
+		43A0EFB91C3CB2C800F54B51 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFB81C3CB2C800F54B51 /* Utils.m */; };
+		43A0EFCC1C3CBC4100F54B51 /* MethodSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFCB1C3CBC4100F54B51 /* MethodSwizzle.m */; };
+		43A0EFCF1C3CC82900F54B51 /* NSView+MCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A0EFCE1C3CC82900F54B51 /* NSView+MCLog.m */; };
+		43BEF0481C3C3A31004A9D3C /* MCOrderedMap.m in Sources */ = {isa = PBXBuildFile; fileRef = 43BEF0471C3C3A31004A9D3C /* MCOrderedMap.m */; };
+		43C26A021A9D774E00BE9280 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C26A011A9D774E00BE9280 /* main.m */; };
+		43C26A051A9D774E00BE9280 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C26A041A9D774E00BE9280 /* AppDelegate.m */; };
+		43C26A071A9D774E00BE9280 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 43C26A061A9D774E00BE9280 /* Images.xcassets */; };
+		43C26A0A1A9D774E00BE9280 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 43C26A081A9D774E00BE9280 /* LaunchScreen.xib */; };
+		43C26A161A9D774E00BE9280 /* MCLogIOS_DemoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C26A151A9D774E00BE9280 /* MCLogIOS_DemoTests.m */; };
+		43C26A1F1A9D77B500BE9280 /* TestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C26A1E1A9D77B500BE9280 /* TestViewController.m */; };
+		43F368CA1C3FF7710083F0BC /* MCIDEConsoleTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 43F368C91C3FF7710083F0BC /* MCIDEConsoleTextView.m */; };
 		8CBAF63C198B88C70067171A /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8CBAF63B198B88C70067171A /* CoreFoundation.framework */; };
 		8CBAF642198B88C70067171A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8CBAF640198B88C70067171A /* InfoPlist.strings */; };
 		8CBAF64B198B88DD0067171A /* MCLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 8CBAF64A198B88DD0067171A /* MCLog.m */; };
 		8CEB067E1BFADD0F00ED4438 /* MCDVTTextStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 8CEB067D1BFADD0F00ED4438 /* MCDVTTextStorage.m */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		43C26A101A9D774E00BE9280 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8CBAF630198B88C70067171A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 43C269FC1A9D774E00BE9280;
+			remoteInfo = MCLogIOS_Demo;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		4362533E1C413D030091D39D /* ALAssociatedWeakObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ALAssociatedWeakObject.h; sourceTree = "<group>"; };
+		4362533F1C413D030091D39D /* ALAssociatedWeakObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ALAssociatedWeakObject.m; sourceTree = "<group>"; };
+		436980221C3C34A200BB7702 /* HHTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HHTimer.h; sourceTree = "<group>"; };
+		436980231C3C34A200BB7702 /* HHTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HHTimer.m; sourceTree = "<group>"; };
+		438950241C3E6E0A00B34D24 /* PluginConfigs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginConfigs.h; sourceTree = "<group>"; };
+		438950251C3E6E0A00B34D24 /* PluginConfigs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PluginConfigs.m; sourceTree = "<group>"; };
+		43A0EFAB1C3C448F00F54B51 /* NSSearchField+MCLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSSearchField+MCLog.h"; sourceTree = "<group>"; };
+		43A0EFAC1C3C448F00F54B51 /* NSSearchField+MCLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSSearchField+MCLog.m"; sourceTree = "<group>"; };
+		43A0EFAE1C3C459100F54B51 /* MCIDEConsoleItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCIDEConsoleItem.h; sourceTree = "<group>"; };
+		43A0EFAF1C3C459100F54B51 /* MCIDEConsoleItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCIDEConsoleItem.m; sourceTree = "<group>"; };
+		43A0EFB11C3C46CF00F54B51 /* MCLogIDEConsoleArea.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCLogIDEConsoleArea.h; sourceTree = "<group>"; };
+		43A0EFB21C3C46CF00F54B51 /* MCLogIDEConsoleArea.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCLogIDEConsoleArea.m; sourceTree = "<group>"; };
+		43A0EFB41C3CB0AA00F54B51 /* MCIDEConsoleAdaptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCIDEConsoleAdaptor.h; sourceTree = "<group>"; };
+		43A0EFB51C3CB0AA00F54B51 /* MCIDEConsoleAdaptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCIDEConsoleAdaptor.m; sourceTree = "<group>"; };
+		43A0EFB71C3CB2C800F54B51 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
+		43A0EFB81C3CB2C800F54B51 /* Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Utils.m; sourceTree = "<group>"; };
+		43A0EFCA1C3CBC4100F54B51 /* MethodSwizzle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MethodSwizzle.h; sourceTree = "<group>"; };
+		43A0EFCB1C3CBC4100F54B51 /* MethodSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MethodSwizzle.m; sourceTree = "<group>"; };
+		43A0EFCD1C3CC82900F54B51 /* NSView+MCLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSView+MCLog.h"; sourceTree = "<group>"; };
+		43A0EFCE1C3CC82900F54B51 /* NSView+MCLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSView+MCLog.m"; sourceTree = "<group>"; };
+		43BEF0461C3C3A31004A9D3C /* MCOrderedMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCOrderedMap.h; sourceTree = "<group>"; };
+		43BEF0471C3C3A31004A9D3C /* MCOrderedMap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCOrderedMap.m; sourceTree = "<group>"; };
+		43C269FD1A9D774E00BE9280 /* MCLogIOS_Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MCLogIOS_Demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		43C26A001A9D774E00BE9280 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		43C26A011A9D774E00BE9280 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		43C26A031A9D774E00BE9280 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		43C26A041A9D774E00BE9280 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		43C26A061A9D774E00BE9280 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		43C26A091A9D774E00BE9280 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		43C26A0F1A9D774E00BE9280 /* MCLogIOS_DemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MCLogIOS_DemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		43C26A141A9D774E00BE9280 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		43C26A151A9D774E00BE9280 /* MCLogIOS_DemoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MCLogIOS_DemoTests.m; sourceTree = "<group>"; };
+		43C26A1D1A9D77B500BE9280 /* TestViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestViewController.h; sourceTree = "<group>"; };
+		43C26A1E1A9D77B500BE9280 /* TestViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestViewController.m; sourceTree = "<group>"; };
+		43F368C81C3FF7710083F0BC /* MCIDEConsoleTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCIDEConsoleTextView.h; sourceTree = "<group>"; };
+		43F368C91C3FF7710083F0BC /* MCIDEConsoleTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCIDEConsoleTextView.m; sourceTree = "<group>"; };
 		8CBAF638198B88C70067171A /* MCLog.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MCLog.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8CBAF63B198B88C70067171A /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		8CBAF63F198B88C70067171A /* MCLog-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MCLog-Info.plist"; sourceTree = "<group>"; };
@@ -27,6 +91,20 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		43C269FA1A9D774E00BE9280 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		43C26A0C1A9D774E00BE9280 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8CBAF635198B88C70067171A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -38,10 +116,90 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		43BEF0441C3C399E004A9D3C /* xcode-extensions */ = {
+			isa = PBXGroup;
+			children = (
+				8CEB067C1BFADD0F00ED4438 /* MCDVTTextStorage.h */,
+				8CEB067D1BFADD0F00ED4438 /* MCDVTTextStorage.m */,
+				43A0EFAB1C3C448F00F54B51 /* NSSearchField+MCLog.h */,
+				43A0EFAC1C3C448F00F54B51 /* NSSearchField+MCLog.m */,
+				43A0EFAE1C3C459100F54B51 /* MCIDEConsoleItem.h */,
+				43A0EFAF1C3C459100F54B51 /* MCIDEConsoleItem.m */,
+				43A0EFB11C3C46CF00F54B51 /* MCLogIDEConsoleArea.h */,
+				43A0EFB21C3C46CF00F54B51 /* MCLogIDEConsoleArea.m */,
+				43A0EFB41C3CB0AA00F54B51 /* MCIDEConsoleAdaptor.h */,
+				43A0EFB51C3CB0AA00F54B51 /* MCIDEConsoleAdaptor.m */,
+				43F368C81C3FF7710083F0BC /* MCIDEConsoleTextView.h */,
+				43F368C91C3FF7710083F0BC /* MCIDEConsoleTextView.m */,
+			);
+			name = "xcode-extensions";
+			sourceTree = "<group>";
+		};
+		43BEF0451C3C39DD004A9D3C /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				436980221C3C34A200BB7702 /* HHTimer.h */,
+				436980231C3C34A200BB7702 /* HHTimer.m */,
+				43BEF0461C3C3A31004A9D3C /* MCOrderedMap.h */,
+				43BEF0471C3C3A31004A9D3C /* MCOrderedMap.m */,
+				43A0EFB71C3CB2C800F54B51 /* Utils.h */,
+				43A0EFB81C3CB2C800F54B51 /* Utils.m */,
+				43A0EFCA1C3CBC4100F54B51 /* MethodSwizzle.h */,
+				43A0EFCB1C3CBC4100F54B51 /* MethodSwizzle.m */,
+				43A0EFCD1C3CC82900F54B51 /* NSView+MCLog.h */,
+				43A0EFCE1C3CC82900F54B51 /* NSView+MCLog.m */,
+				4362533E1C413D030091D39D /* ALAssociatedWeakObject.h */,
+				4362533F1C413D030091D39D /* ALAssociatedWeakObject.m */,
+			);
+			name = Utils;
+			sourceTree = "<group>";
+		};
+		43C269FE1A9D774E00BE9280 /* MCLogIOS_Demo */ = {
+			isa = PBXGroup;
+			children = (
+				43C26A031A9D774E00BE9280 /* AppDelegate.h */,
+				43C26A041A9D774E00BE9280 /* AppDelegate.m */,
+				43C26A061A9D774E00BE9280 /* Images.xcassets */,
+				43C26A081A9D774E00BE9280 /* LaunchScreen.xib */,
+				43C269FF1A9D774E00BE9280 /* Supporting Files */,
+				43C26A1D1A9D77B500BE9280 /* TestViewController.h */,
+				43C26A1E1A9D77B500BE9280 /* TestViewController.m */,
+			);
+			path = MCLogIOS_Demo;
+			sourceTree = "<group>";
+		};
+		43C269FF1A9D774E00BE9280 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				43C26A001A9D774E00BE9280 /* Info.plist */,
+				43C26A011A9D774E00BE9280 /* main.m */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		43C26A121A9D774E00BE9280 /* MCLogIOS_DemoTests */ = {
+			isa = PBXGroup;
+			children = (
+				43C26A151A9D774E00BE9280 /* MCLogIOS_DemoTests.m */,
+				43C26A131A9D774E00BE9280 /* Supporting Files */,
+			);
+			path = MCLogIOS_DemoTests;
+			sourceTree = "<group>";
+		};
+		43C26A131A9D774E00BE9280 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				43C26A141A9D774E00BE9280 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 		8CBAF62F198B88C70067171A = {
 			isa = PBXGroup;
 			children = (
 				8CBAF63D198B88C70067171A /* MCLog */,
+				43C269FE1A9D774E00BE9280 /* MCLogIOS_Demo */,
+				43C26A121A9D774E00BE9280 /* MCLogIOS_DemoTests */,
 				8CBAF63A198B88C70067171A /* Frameworks */,
 				8CBAF639198B88C70067171A /* Products */,
 			);
@@ -51,6 +209,8 @@
 			isa = PBXGroup;
 			children = (
 				8CBAF638198B88C70067171A /* MCLog.xcplugin */,
+				43C269FD1A9D774E00BE9280 /* MCLogIOS_Demo.app */,
+				43C26A0F1A9D774E00BE9280 /* MCLogIOS_DemoTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -66,12 +226,14 @@
 		8CBAF63D198B88C70067171A /* MCLog */ = {
 			isa = PBXGroup;
 			children = (
-				8CBAF63E198B88C70067171A /* Supporting Files */,
+				43BEF0451C3C39DD004A9D3C /* Utils */,
+				43BEF0441C3C399E004A9D3C /* xcode-extensions */,
 				8CBAF649198B88DD0067171A /* MCLog.h */,
 				8CBAF64A198B88DD0067171A /* MCLog.m */,
-				8CEB067C1BFADD0F00ED4438 /* MCDVTTextStorage.h */,
-				8CEB067D1BFADD0F00ED4438 /* MCDVTTextStorage.m */,
 				8CEB067B1BFADA1700ED4438 /* MCXcodeHeaders.h */,
+				8CBAF63E198B88C70067171A /* Supporting Files */,
+				438950241C3E6E0A00B34D24 /* PluginConfigs.h */,
+				438950251C3E6E0A00B34D24 /* PluginConfigs.m */,
 			);
 			path = MCLog;
 			sourceTree = "<group>";
@@ -89,6 +251,41 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		43C269FC1A9D774E00BE9280 /* MCLogIOS_Demo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 43C26A1B1A9D774E00BE9280 /* Build configuration list for PBXNativeTarget "MCLogIOS_Demo" */;
+			buildPhases = (
+				43C269F91A9D774E00BE9280 /* Sources */,
+				43C269FA1A9D774E00BE9280 /* Frameworks */,
+				43C269FB1A9D774E00BE9280 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MCLogIOS_Demo;
+			productName = MCLogIOS_Demo;
+			productReference = 43C269FD1A9D774E00BE9280 /* MCLogIOS_Demo.app */;
+			productType = "com.apple.product-type.application";
+		};
+		43C26A0E1A9D774E00BE9280 /* MCLogIOS_DemoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 43C26A1C1A9D774E00BE9280 /* Build configuration list for PBXNativeTarget "MCLogIOS_DemoTests" */;
+			buildPhases = (
+				43C26A0B1A9D774E00BE9280 /* Sources */,
+				43C26A0C1A9D774E00BE9280 /* Frameworks */,
+				43C26A0D1A9D774E00BE9280 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				43C26A111A9D774E00BE9280 /* PBXTargetDependency */,
+			);
+			name = MCLogIOS_DemoTests;
+			productName = MCLogIOS_DemoTests;
+			productReference = 43C26A0F1A9D774E00BE9280 /* MCLogIOS_DemoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		8CBAF637198B88C70067171A /* MCLog */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8CBAF646198B88C70067171A /* Build configuration list for PBXNativeTarget "MCLog" */;
@@ -112,8 +309,18 @@
 		8CBAF630198B88C70067171A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0720;
 				ORGANIZATIONNAME = "Yuhua Chen";
+				TargetAttributes = {
+					43C269FC1A9D774E00BE9280 = {
+						CreatedOnToolsVersion = 6.1.1;
+						DevelopmentTeam = D7348372R8;
+					};
+					43C26A0E1A9D774E00BE9280 = {
+						CreatedOnToolsVersion = 6.1.1;
+						TestTargetID = 43C269FC1A9D774E00BE9280;
+					};
+				};
 			};
 			buildConfigurationList = 8CBAF633198B88C70067171A /* Build configuration list for PBXProject "MCLog" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -121,6 +328,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 8CBAF62F198B88C70067171A;
 			productRefGroup = 8CBAF639198B88C70067171A /* Products */;
@@ -128,11 +336,29 @@
 			projectRoot = "";
 			targets = (
 				8CBAF637198B88C70067171A /* MCLog */,
+				43C269FC1A9D774E00BE9280 /* MCLogIOS_Demo */,
+				43C26A0E1A9D774E00BE9280 /* MCLogIOS_DemoTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		43C269FB1A9D774E00BE9280 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				43C26A0A1A9D774E00BE9280 /* LaunchScreen.xib in Resources */,
+				43C26A071A9D774E00BE9280 /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		43C26A0D1A9D774E00BE9280 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8CBAF636198B88C70067171A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -144,18 +370,64 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		43C269F91A9D774E00BE9280 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				43C26A1F1A9D77B500BE9280 /* TestViewController.m in Sources */,
+				43C26A051A9D774E00BE9280 /* AppDelegate.m in Sources */,
+				43C26A021A9D774E00BE9280 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		43C26A0B1A9D774E00BE9280 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				43C26A161A9D774E00BE9280 /* MCLogIOS_DemoTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8CBAF634198B88C70067171A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				43A0EFB91C3CB2C800F54B51 /* Utils.m in Sources */,
+				43A0EFB61C3CB0AB00F54B51 /* MCIDEConsoleAdaptor.m in Sources */,
+				438950261C3E6E0A00B34D24 /* PluginConfigs.m in Sources */,
+				436980241C3C34A200BB7702 /* HHTimer.m in Sources */,
+				43BEF0481C3C3A31004A9D3C /* MCOrderedMap.m in Sources */,
+				43A0EFAD1C3C449000F54B51 /* NSSearchField+MCLog.m in Sources */,
+				43A0EFCF1C3CC82900F54B51 /* NSView+MCLog.m in Sources */,
+				43A0EFCC1C3CBC4100F54B51 /* MethodSwizzle.m in Sources */,
 				8CBAF64B198B88DD0067171A /* MCLog.m in Sources */,
+				43A0EFB31C3C46CF00F54B51 /* MCLogIDEConsoleArea.m in Sources */,
 				8CEB067E1BFADD0F00ED4438 /* MCDVTTextStorage.m in Sources */,
+				436253401C413D030091D39D /* ALAssociatedWeakObject.m in Sources */,
+				43F368CA1C3FF7710083F0BC /* MCIDEConsoleTextView.m in Sources */,
+				43A0EFB01C3C459100F54B51 /* MCIDEConsoleItem.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		43C26A111A9D774E00BE9280 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 43C269FC1A9D774E00BE9280 /* MCLogIOS_Demo */;
+			targetProxy = 43C26A101A9D774E00BE9280 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
+		43C26A081A9D774E00BE9280 /* LaunchScreen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				43C26A091A9D774E00BE9280 /* Base */,
+			);
+			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
 		8CBAF640198B88C70067171A /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -167,6 +439,96 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		43C26A171A9D774E00BE9280 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = MCLogIOS_Demo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.alexlee002.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		43C26A181A9D774E00BE9280 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				INFOPLIST_FILE = MCLogIOS_Demo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.alexlee002.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		43C26A191A9D774E00BE9280 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = MCLogIOS_DemoTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.alexlee002.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MCLogIOS_Demo.app/MCLogIOS_Demo";
+			};
+			name = Debug;
+		};
+		43C26A1A1A9D774E00BE9280 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = MCLogIOS_DemoTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "me.alexlee002.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MCLogIOS_Demo.app/MCLogIOS_Demo";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		8CBAF644198B88C70067171A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -184,6 +546,7 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -199,7 +562,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -232,7 +595,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -247,6 +610,7 @@
 				GCC_PREFIX_HEADER = "MCLog/MCLog-Prefix.pch";
 				INFOPLIST_FILE = "MCLog/MCLog-Info.plist";
 				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.michaelchen.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xcplugin;
 			};
@@ -262,6 +626,7 @@
 				GCC_PREFIX_HEADER = "MCLog/MCLog-Prefix.pch";
 				INFOPLIST_FILE = "MCLog/MCLog-Info.plist";
 				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.michaelchen.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xcplugin;
 			};
@@ -270,6 +635,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		43C26A1B1A9D774E00BE9280 /* Build configuration list for PBXNativeTarget "MCLogIOS_Demo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				43C26A171A9D774E00BE9280 /* Debug */,
+				43C26A181A9D774E00BE9280 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		43C26A1C1A9D774E00BE9280 /* Build configuration list for PBXNativeTarget "MCLogIOS_DemoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				43C26A191A9D774E00BE9280 /* Debug */,
+				43C26A1A1A9D774E00BE9280 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		8CBAF633198B88C70067171A /* Build configuration list for PBXProject "MCLog" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -8,8 +8,14 @@
 
 @import Foundation;
 
+@class MCOrderedMap;
 @interface MCLog : NSObject
+
 + (void)pluginDidLoad:(NSBundle *)bundle;
+
++ (NSMutableDictionary<NSString *, MCOrderedMap *> *)consoleItemsMap;
+
++ (NSMutableDictionary<NSString *, NSRegularExpression *> *)filterPatternsMap;
 @end
 
 

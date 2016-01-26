@@ -1,0 +1,66 @@
+#
+# clang-format的最基本code style是LLVM, 
+# 其他的所有内置code style都是继承于 LLVM,
+# 下边是 clang-format 的全部59个配置项
+#
+BasedOnStyle: Google
+Language: Cpp
+###
+AccessModifierOffset: -2
+AlignAfterOpenBracket: true
+AlignOperands: true
+AlignTrailingComments: true
+AlignConsecutiveAssignments: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortFunctionsOnASingleLine: All
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+#AlwaysBreakAfterDefinitionReturnType: None
+BinPackParameters: true
+BinPackArguments: true
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
+BreakBeforeBraces: Attach
+BreakConstructorInitializersBeforeComma: false
+ColumnLimit: 120
+CommentPragmas: "^ IWYU pragma:"
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+Cpp11BracedListStyle: true
+ExperimentalAutoDetectBinPacking: false
+IndentWrappedFunctionNames: false
+IndentWidth: 4
+TabWidth: 8
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: None
+ObjCBlockIndentWidth: 4
+PointerAlignment: Right
+UseTab: Never
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpaceInEmptyParentheses: false
+SpacesInContainerLiterals: true
+SpacesInCStyleCastParentheses: false
+SpaceAfterCStyleCast: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeAssignmentOperators: true
+SpacesInAngles: false
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+PenaltyExcessCharacter: 1000000
+AlignEscapedNewlinesLeft: true
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AlwaysBreakBeforeMultilineStrings: true
+AlwaysBreakTemplateDeclarations: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+DerivePointerAlignment: true
+IndentCaseLabels: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+ObjCSpaceAfterProperty: false
+ObjCSpaceBeforeProtocolList: true
+SpacesBeforeTrailingComments: 2
+Standard: Auto
+PenaltyReturnTypeOnItsOwnLine: 200
+PenaltyBreakBeforeFirstCallParameter: 1
