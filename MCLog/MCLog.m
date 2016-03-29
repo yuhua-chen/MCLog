@@ -30,8 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation MCLog
 
 + (void)load {
-    NSLog(@"%s, env: %s", __PRETTY_FUNCTION__, getenv(MCLOG_FLAG));
-
     if (getenv(MCLOG_FLAG) && !strcmp(getenv(MCLOG_FLAG), "YES")) {
         // alreay installed plugin
         return;
@@ -40,7 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (void)pluginDidLoad:(NSBundle *)bundle {
-    MCLogger(@"%s, %@", __PRETTY_FUNCTION__, bundle);
     static id sharedPlugin = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -85,26 +82,34 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - init UI
 
 - (BOOL)addCustomViews {
-    NSView *contentView         = [[NSApp mainWindow] contentView];
-    NSTextView *consoleTextView = [contentView descendantViewByClassName:@"IDEConsoleTextView"];
-    if (!consoleTextView) {
-        return NO;
-    }
-    DVTTextStorage *textStorage = [consoleTextView valueForKey:@"textStorage"];
-    if ([textStorage respondsToSelector:@selector(setConsoleStorage:)]) {
-        [textStorage setConsoleStorage:YES];
-    }
+    for (NSWindow *window in [NSApp windows]) {
+        NSView *contentView = [window contentView];
+        NSTextView *consoleTextView = [contentView descendantViewByClassName:@"IDEConsoleTextView"];
 
-    contentView          = [consoleTextView ancestralViewByClassName:@"DVTControllerContentView"];
-    NSView *scopeBarView = [contentView descendantViewByClassName:@"DVTScopeBarView"];
-    if (!scopeBarView) {
-        return NO;
+        if (!consoleTextView) {
+            continue;
+        }
+
+        DVTTextStorage *textStorage = [consoleTextView valueForKey:@"textStorage"];
+        if ([textStorage respondsToSelector:@selector(setConsoleStorage:)]) {
+            [textStorage setConsoleStorage:YES];
+        }
+
+        NSView *scopeBarView = nil;
+        NSView *parent = consoleTextView.superview;
+        while (!scopeBarView) {
+            if (!parent) break;
+            scopeBarView = [parent descendantViewByClassName:@"DVTScopeBarView"];
+            parent = parent.superview;
+        }
+
+        if (!scopeBarView) {
+            continue;
+        }
+
+        [self addLogLevelButtonItemsAt:scopeBarView defaultLogLevel:[[consoleTextView valueForKey:@"logMode"] intValue]];
+        [self addLogFilterPatternTextFieldAt:scopeBarView associateWith:consoleTextView];
     }
-    
-
-    [self addLogLevelButtonItemsAt:scopeBarView defaultLogLevel:[[consoleTextView valueForKey:@"logMode"] intValue]];
-    [self addLogFilterPatternTextFieldAt:scopeBarView associateWith:consoleTextView];
-
 
     return YES;
 }
