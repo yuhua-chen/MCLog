@@ -40,9 +40,13 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)pluginDidLoad:(NSBundle *)bundle {
     static id sharedPlugin = nil;
     static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        sharedPlugin = [[self alloc] init];
-    });
+
+    NSString *currentApplicationName = [[NSBundle mainBundle] infoDictionary][@"CFBundleName"];
+    if ([currentApplicationName isEqual:@"Xcode"]) {
+        dispatch_once(&onceToken, ^{
+            sharedPlugin = [[self alloc] init];
+        });
+    }
 }
 
 + (NSMutableDictionary<NSString *, MCOrderedMap *> *)consoleItemsMap {
