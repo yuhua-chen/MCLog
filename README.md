@@ -7,7 +7,7 @@ This plugin lets you easily filter the Xcode console log output. While you can a
 
 ## Compatibility
 
- - Support Xcode 5 above.
+ - Works in Xcode 5.0 through 7.3.  Unfortunately, [Apple no longer supports Xcode plug-ins as of Xcode 8.0](https://github.com/alcatraz/Alcatraz/issues/475).
  
 ## Features
 
