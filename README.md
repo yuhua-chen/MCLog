@@ -1,4 +1,4 @@
-#MCLog
+# MCLog
 
 This plugin lets you easily filter the Xcode console log output. While you can already search the text in the console log output you are still left searching through a lot of code that has nothing to do with what you're interested in. MCLog is a simple solution to this problem. Filter the console using simple strings and display what you really want to see. Here's the demo:
 
